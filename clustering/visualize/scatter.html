@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+svg {
+  margin-right: 300px;
+  margin-left: 250px;
+  margin-top: 300px;
+}
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+</style>
+<body>
+
+<div id="plot"></div>
+
+<select>
+  <option value="/outputclusters.d3.csv">Test</option>
+  <option value="/results/filters01/pre/p-08.d3.csv">Filters: pipeline 8</option>
+  <option value="/results/filters01/pre/p-09_d-02.d3.csv">Filters: pipeline 9; d=2</option>
+  <option value="/results/filters01/pre/p-09_d-04.d3.csv">Filters: pipeline 9; d=4</option>
+  <option value="/results/filters01/pre/p-09_d-07.d3.csv">Filters: pipeline 9; d=7</option>
+  <option value="/results/filters01/pre/p-09_d-10.d3.csv">Filters: pipeline 9; d=10</option>
+  <option value="/results/filters01/pre/p-09_d-12.d3.csv">Filters: pipeline 9; d=12</option>
+  <option value="/results/filters01/pre/p-09_d-14.d3.csv">Filters: pipeline 9; d=14</option>
+  <option value="/results/filters01/pre/p-09_d-17.d3.csv">Filters: pipeline 9; d=17</option>
+  <option value="/results/filters01/pre/p-09_d-21.d3.csv">Filters: pipeline 9; d=21</option>
+  <option value="/results/filters01/pre/p-09_d-24.d3.csv">Filters: pipeline 9; d=24</option>
+  <option value="/results/filters01/pre/p-09_d-26.d3.csv">Filters: pipeline 9; d=26</option>
+
+  <option value="/results/augments01/pre/p-08.d3.csv">Augments: pipeline 8</option>
+  <option value="/results/augments01/pre/p-09_d-02.d3.csv">Augments: pipeline 9; d=2</option>
+  <option value="/results/augments01/pre/p-09_d-04.d3.csv">Augments: pipeline 9; d=4</option>
+  <option value="/results/augments01/pre/p-09_d-07.d3.csv">Augments: pipeline 9; d=7</option>
+  <option value="/results/augments01/pre/p-09_d-09.d3.csv">Augments: pipeline 9; d=9</option>
+  <option value="/results/augments01/pre/p-09_d-10.d3.csv">Augments: pipeline 9; d=10</option>
+  <option value="/results/augments01/pre/p-09_d-15.d3.csv">Augments: pipeline 9; d=15</option>
+  <option value="/results/augments01/pre/p-09_d-20.d3.csv">Augments: pipeline 9; d=20</option>
+  <option value="/results/augments01/pre/p-09_d-30.d3.csv">Augments: pipeline 9; d=30</option>
+  <option value="/results/augments01/pre/p-09_d-50.d3.csv">Augments: pipeline 9; d=50</option>
+  <option value="/results/augments01/pre/p-09_d-60.d3.csv">Augments: pipeline 9; d=60</option>
+  <option value="/results/augments01/pre/p-09_d-70.d3.csv">Augments: pipeline 9; d=70</option>
+  <option value="/results/augments01/pre/p-09_d-80.d3.csv">Augments: pipeline 9; d=80</option>
+  <option value="/results/augments01/pre/p-09_d-90.d3.csv">Augments: pipeline 9; d=90</option>
+  <option value="/results/augments01/pre/p-09_d-100.d3.csv">Augments: pipeline 9; d=100</option>
+  <option value="/results/augments01/pre/p-09_d-110.d3.csv">Augments: pipeline 9; d=110</option>
+
+  <!--<option value="/results/augments01/pre/p-09_d-11.d3.csv">Augments: pipeline 9; d=11</option>
+  <option value="/results/augments01/pre/p-09_d-13.d3.csv">Augments: pipeline 9; d=13</option>
+  <option value="/results/augments01/pre/p-09_d-15.d3.csv">Augments: pipeline 9; d=15</option>
+  <option value="/results/augments01/pre/p-09_d-17.d3.csv">Augments: pipeline 9; d=17</option>
+  <option value="/results/augments01/pre/p-09_d-19.d3.csv">Augments: pipeline 9; d=19</option>-->
+
+  <option value="/results/aggregates01/pre/p-08.d3.csv">Aggregates: pipeline 8</option>
+  <option value="/results/aggregates01/pre/p-09_d-02.d3.csv">Aggregates: pipeline 9; d=2</option>
+  <option value="/results/aggregates01/pre/p-09_d-04.d3.csv">Aggregates: pipeline 9; d=4</option>
+  <option value="/results/aggregates01/pre/p-09_d-07.d3.csv">Aggregates: pipeline 9; d=7</option>
+  <option value="/results/aggregates01/pre/p-09_d-10.d3.csv">Aggregates: pipeline 9; d=10</option>
+  <option value="/results/aggregates01/pre/p-09_d-12.d3.csv">Aggregates: pipeline 9; d=12</option>
+  <option value="/results/aggregates01/pre/p-09_d-14.d3.csv">Aggregates: pipeline 9; d=14</option>
+  <option value="/results/aggregates01/pre/p-09_d-17.d3.csv">Aggregates: pipeline 9; d=17</option>
+  <option value="/results/aggregates01/pre/p-09_d-21.d3.csv">Aggregates: pipeline 9; d=21</option>
+  <option value="/results/aggregates01/pre/p-09_d-24.d3.csv">Aggregates: pipeline 9; d=24</option>
+  <option value="/results/aggregates01/pre/p-09_d-26.d3.csv">Aggregates: pipeline 9; d=26</option>
+  <option value="/results/aggregates01/pre/p-09_d-30.d3.csv">Aggregates: pipeline 9; d=30</option>
+  <option value="/results/aggregates01/pre/p-09_d-35.d3.csv">Aggregates: pipeline 9; d=35</option>
+  <option value="/results/aggregates01/pre/p-09_d-40.d3.csv">Aggregates: pipeline 9; d=40</option>
+  <option value="/results/aggregates01/pre/p-09_d-44.d3.csv">Aggregates: pipeline 9; d=44</option>
+
+  <option value="/results/sessions02/pre/p-08.d3.csv">Sessions 2: pipeline 8</option>
+  <option value="/results/sessions02/pre/p-09_d-02.d3.csv">Sessions 2: pipeline 9; d=2</option>
+  <option value="/results/sessions02/pre/p-09_d-04.d3.csv">Sessions 2: pipeline 9; d=4</option>
+  <option value="/results/sessions02/pre/p-09_d-07.d3.csv">Sessions 2: pipeline 9; d=7</option>
+  <option value="/results/sessions02/pre/p-09_d-10.d3.csv">Sessions 2: pipeline 9; d=10</option>
+  <option value="/results/sessions02/pre/p-09_d-12.d3.csv">Sessions 2: pipeline 9; d=12</option>
+  <option value="/results/sessions02/pre/p-09_d-14.d3.csv">Sessions 2: pipeline 9; d=14</option>
+  <option value="/results/sessions02/pre/p-09_d-17.d3.csv">Sessions 2: pipeline 9; d=17</option>
+  <option value="/results/sessions02/pre/p-09_d-21.d3.csv">Sessions 2: pipeline 9; d=21</option>
+  <option value="/results/sessions02/pre/p-09_d-24.d3.csv">Sessions 2: pipeline 9; d=24</option>
+  <option value="/results/sessions02/pre/p-09_d-26.d3.csv">Sessions 2: pipeline 9; d=26</option>
+  <option value="/results/sessions02/pre/p-09_d-30.d3.csv">Sessions 2: pipeline 9; d=30</option>
+  <option value="/results/sessions02/pre/p-09_d-42.d3.csv">Sessions 2: pipeline 9; d=42</option>
+  <option value="/results/sessions02/pre/p-09_d-46.d3.csv">Sessions 2: pipeline 9; d=46</option>
+  <option value="/results/sessions02/pre/p-09_d-50.d3.csv">Sessions 2: pipeline 9; d=50</option>
+  <option value="/results/sessions02/pre/p-09_d-55.d3.csv">Sessions 2: pipeline 9; d=55</option>
+  <option value="/results/sessions02/pre/p-09_d-60.d3.csv">Sessions 2: pipeline 9; d=60</option>
+  <option value="/results/sessions02/pre/p-09_d-65.d3.csv">Sessions 2: pipeline 9; d=65</option>
+  <option value="/results/sessions02/pre/p-09_d-70.d3.csv">Sessions 2: pipeline 9; d=70</option>
+  <option value="/results/sessions02/pre/p-09_d-75.d3.csv">Sessions 2: pipeline 9; d=75</option>
+  <option value="/results/sessions02/pre/p-09_d-80.d3.csv">Sessions 2: pipeline 9; d=80</option>
+  
+  <option value="/results/sessions03/pre/p-08.d3.csv">Sessions 3: pipeline 8</option>
+  <option value="/results/sessions03/pre/p-09_d-02.d3.csv">Sessions 3: pipeline 9; d=2</option>
+  <option value="/results/sessions03/pre/p-09_d-04.d3.csv">Sessions 3: pipeline 9; d=4</option>
+  <option value="/results/sessions03/pre/p-09_d-07.d3.csv">Sessions 3: pipeline 9; d=7</option>
+  <option value="/results/sessions03/pre/p-09_d-10.d3.csv">Sessions 3: pipeline 9; d=10</option>
+  <option value="/results/sessions03/pre/p-09_d-12.d3.csv">Sessions 3: pipeline 9; d=12</option>
+  <option value="/results/sessions03/pre/p-09_d-14.d3.csv">Sessions 3: pipeline 9; d=14</option>
+  <option value="/results/sessions03/pre/p-09_d-17.d3.csv">Sessions 3: pipeline 9; d=17</option>
+  <option value="/results/sessions03/pre/p-09_d-21.d3.csv">Sessions 3: pipeline 9; d=21</option>
+  <option value="/results/sessions03/pre/p-09_d-24.d3.csv">Sessions 3: pipeline 9; d=24</option>
+  <option value="/results/sessions03/pre/p-09_d-26.d3.csv">Sessions 3: pipeline 9; d=26</option>
+  <option value="/results/sessions03/pre/p-09_d-30.d3.csv">Sessions 3: pipeline 9; d=30</option>
+  <option value="/results/sessions03/pre/p-09_d-42.d3.csv">Sessions 3: pipeline 9; d=42</option>
+  <option value="/results/sessions03/pre/p-09_d-46.d3.csv">Sessions 3: pipeline 9; d=46</option>
+  <option value="/results/sessions03/pre/p-09_d-50.d3.csv">Sessions 3: pipeline 9; d=50</option>
+  <option value="/results/sessions03/pre/p-09_d-55.d3.csv">Sessions 3: pipeline 9; d=55</option>
+  <option value="/results/sessions03/pre/p-09_d-60.d3.csv">Sessions 3: pipeline 9; d=60</option>
+  <option value="/results/sessions03/pre/p-09_d-65.d3.csv">Sessions 3: pipeline 9; d=65</option>
+  <option value="/results/sessions03/pre/p-09_d-70.d3.csv">Sessions 3: pipeline 9; d=70</option>
+  <option value="/results/sessions03/pre/p-09_d-75.d3.csv">Sessions 3: pipeline 9; d=75</option>
+  <option value="/results/sessions03/pre/p-09_d-80.d3.csv">Sessions 3: pipeline 9; d=80</option>
+
+</select>
+
+<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+<script>
+
+
+$("select").change(function() {
+  
+  var projection = $("select").val();
+
+  var margin = {top: 20, right: 20, bottom: 30, left: 40},
+      width = 960 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+  var x = d3.scale.linear()
+      .range([0, width]);
+
+  var y = d3.scale.linear()
+      .range([height, 0]);
+
+  var color = d3.scale.category10();
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+  var tip = d3.tip()
+      .attr("class", "d3-tip")
+      .offset([-10, 0])
+      .html(function(d) {
+        m = d.mouseover.replace(/\n/g, "<br/>").replace(/ /g, "&nbsp;").replace(/\t/g, "&nbsp&nbsp;&nbsp;&nbsp;&nbsp;");
+        m = m.replace("| metadata type=sourcetypes | search totalCount > 0", "DEBUG-SOURCETYPES");
+        m = m.replace("|metadata type=sourcetypes | search totalCount > 0", "DEBUG-SOURCETYPES");
+        return "<div>" + m + "</div>";
+      });
+
+  $("#plot").empty();
+  
+  var svg = d3.select("#plot").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  d3.csv(projection, function(error, data) {
+    data.forEach(function(d) {
+      d.Y = +d.Y;
+      d.X = +d.X;
+    });
+
+    x.domain(d3.extent(data, function(d) { return d.X; })).nice();
+    y.domain(d3.extent(data, function(d) { return d.Y; })).nice();
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.call(tip);
+
+    svg.selectAll(".dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", function(d) { return x(d.X); })
+        .attr("cy", function(d) { return y(d.Y); })
+        .style("fill", function(d) { return color(d.cluster); })
+        .on("mouseover", tip.show)
+        .on("mouseout", tip.hide);
+
+    var legend = svg.selectAll(".legend")
+        .data(color.domain())
+      .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+    legend.append("rect")
+        .attr("x", width - 18)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+    legend.append("text")
+        .attr("x", width - 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "end")
+        .text(function(d) { return d; });
+
+  });
+
+});
+
+</script>
