@@ -13,6 +13,10 @@ logger.addHandler(handler)
 from pipeline import *
 from queryutils.datasource import CSVFiles, JSONFiles, PostgresDB, SQLite3DB
 
+# Uncomment to debug:
+from numpy import seterr
+seterr(all="raise")
+
 NON_PCA_PIPELINES = [1, 5, 6, 8]
 PCA_PIPELINES = [2, 3, 4, 7, 9]
 

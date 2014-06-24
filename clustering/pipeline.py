@@ -29,6 +29,7 @@ class Clusterees(object):
     FILTERS = "filters"
     AUGMENTS = "augments"
     AGGREGATES = "aggregates"
+    TEXTS = "texts"
 
 
 def fetch_data(source, clusterees):
@@ -40,6 +41,7 @@ def fetch_data(source, clusterees):
         Clusterees.FILTERS: (source.get_unique_filters, label_parsetree),
         Clusterees.AUGMENTS: (source.get_unique_augments, label_parsetree),
         Clusterees.AGGREGATES: (source.get_unique_aggregates, label_parsetree),
+        Clusterees.TEXTS: (source.get_suspicious_texts, label_text),
     }
     fetcher = fetchers.get(clusterees, None)
     if fetcher is None:
@@ -66,6 +68,9 @@ def label_session(session):
 
 def label_parsetree(node):
     return node.str_tree()
+
+def label_text(text):
+    return str(text)
 
 def output_mouseovers(mouseovers, filename):
     filename = ".".join([filename, "json"])
