@@ -11,18 +11,19 @@ handler.setLevel(DEBUG)
 logger.addHandler(handler)
 
 from pipeline import *
-from queryutils.datasource import CSVFiles, JSONFiles, PostgresDB, SQLite3DB
+from queryutils.files import CSVFiles, JSONFiles
+from queryutils.databases import PostgresDB, SQLite3DB
 
 # Uncomment to debug:
-from numpy import seterr
-seterr(all="raise")
+# from numpy import seterr
+# seterr(all="raise")
 
 NON_PCA_PIPELINES = [1, 5, 6, 8]
 PCA_PIPELINES = [2, 3, 4, 7, 9]
 
 SOURCES = {
-    "csvfiles": (CSVFiles, ["srcpath", "version"]),
-    "jsonfiles": (JSONFiles, ["srcpath", "version"]),
+    "csvfiles": (CSVFiles, ["path", "version"]),
+    "jsonfiles": (JSONFiles, ["path", "version"]),
     "postgresdb": (PostgresDB, ["database", "user", "password"]),
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }

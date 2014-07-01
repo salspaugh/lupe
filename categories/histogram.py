@@ -1,22 +1,21 @@
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.files import CSVFiles, JSONFiles
 from queryutils.parse import tokenize_query
-from queryutils.datasource import CSVFiles, JSONFiles, PostgresDB, SQLite3DB
-from queryutils.splunktypes import lookup_category
-
-RESULTS_DIR = "results/"
+from queryutils.splunktypes import lookup_categories
 
 SOURCES = {
-    "csvfiles": (CSVFiles, ["srcpath", "version"]),
-    "jsonfiles": (JSONFiles, ["srcpath", "version"]),
+    "csvfiles": (CSVFiles, ["path", "version"]),
+    "jsonfiles": (JSONFiles, ["path", "version"]),
     "postgresdb": (PostgresDB, ["database", "user", "password"]),
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-def main(source):
+def main(source, output):
     category_counts, nqueries = tally_category_counts(source)
-    create_histogram(category_counts, nqueries)
+    create_histogram(category_counts, nqueries, output)
 
 def tally_category_counts(source):
     category_counts = defaultdict(int)
@@ -29,32 +28,7 @@ def tally_category_counts(source):
                 category_counts[category] += 1
     return category_counts, nqueries
 
-def lookup_categories(query):
-    tokens = tokenize_query(query)
-    categories = []
-    for idx, token in enumerate(tokens):
-        if token.type == "USER_DEFINED_COMMAND":
-            categories.append("User-Defined")
-        elif token.type == "MACRO":
-            categories.append("Macro")
-        elif token.type not in ["ARGS", "PIPE", "LBRACKET", "RBRACKET"]:
-            command = token.value
-            # Note: This is an imperfect way to detect this.
-            # See queryutils.splunktypes for the right way to do it.
-            if token.value == "addtotals": 
-                if len(tokens) == idx+1:
-                    command = "addtotals row"
-                elif tokens[idx+1].value.lower()[:3] == "row":
-                    command = "addtotals row"
-                else:
-                    command = "addtotals col"
-            try:
-                categories.append(lookup_category(command))
-            except KeyError as e:
-                print e, token
-    return categories
-
-def create_histogram(categories, total_queries):
+def create_histogram(categories, total_queries, output):
     names = sorted(categories, key=categories.get, reverse=True)
     percents = convert_to_percents(categories)
     counts = sorted(categories.values(), reverse=True)
@@ -72,7 +46,7 @@ def create_histogram(categories, total_queries):
     autolabel(rects, percents)
     plt.autoscale(enable=True, axis='x', tight=None)
     plt.tight_layout()
-    plt.savefig(RESULTS_DIR + "categories_histogram.png", dpi=400)
+    plt.savefig(output + ".png", dpi=400)
 
 def convert_to_percents(categories):
     percents = {}
@@ -91,11 +65,6 @@ def autolabel(rects, counts):
             rect.get_x() + rect.get_width() / 2., height +
             1000, '%s' % (counts[ii]),
             ha='center', va='bottom', fontsize=20)
-
-def write_missing(missing):
-    with open('results/nonlisted_commands.txt', 'w') as f:
-        for command in sorted(missing, key=missing.get, reverse=True):
-            f.write(command + ": " + str(missing[command]) + "\n")
 
 def lookup(dictionary, lookup_keys):
     return [dictionary[k] for k in lookup_keys]
@@ -117,14 +86,18 @@ if __name__ == "__main__":
                         help="the password for the Postgres database")
     parser.add_argument("-D", "--database",
                         help="the database for Postgres")
+    parser.add_argument("-o", "--output",
+                        help="the name of the output file")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()
-    if not args.source:
+    if args.source is None:
         raise RuntimeError(
             "You must specify where to fetch the data and the corresponding arguments (-s or --source).")
+    if args.output is None:
+        args.output = "categories_histogram"
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source)
+    main(source, args.output)

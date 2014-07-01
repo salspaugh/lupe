@@ -12,16 +12,16 @@ toppaths:
 	echo "Outputting data for top paths in text on page 9."
 
 fig2:
-	python categories/histogram.py -s postgresdb -U lupe -P lupe -D lupe
+	python categories/histogram.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig2
 
 fig3:
-	echo "Making Figure 3."
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig3 -t user
 
 fig4:
-	echo "Making Figure 4."
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig4 -t solaris3-web-access
 
 fig5:
-	echo "Making Figure 5."
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig5 -t vmware:perf:
 
 fig6:
 	python clustering/main.py -s postgresdb -U lupe -P lupe -D lupe -p 9 -f filters01 -l filters -n -d 10 -o results/fig6.clusters -u results/fig6.mouseovers -t results/fig6.features

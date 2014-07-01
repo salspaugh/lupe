@@ -11,7 +11,6 @@ from json import dump
 from featurize import get_features, featurize_obj
 from numpy import linalg, cov, argsort, dot, empty, zeros, array, max, abs, isnan
 from os import path, walk
-from queryutils.datasource import CSVFiles, JSONFiles, PostgresDB, SQLite3DB
 from tsnewrapper import calc_tsne
 
 import csv
@@ -41,7 +40,7 @@ def fetch_data(source, clusterees):
         Clusterees.FILTERS: (source.get_unique_filters, label_parsetree),
         Clusterees.AUGMENTS: (source.get_unique_augments, label_parsetree),
         Clusterees.AGGREGATES: (source.get_unique_aggregates, label_parsetree),
-        Clusterees.TEXTS: (source.get_suspicious_texts, label_text),
+        #Clusterees.TEXTS: (source.get_suspicious_texts, label_text),
     }
     fetcher = fetchers.get(clusterees, None)
     if fetcher is None:
