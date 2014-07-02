@@ -1,12 +1,12 @@
 
 tab2:
-	echo "Outputting data for table 2."
+	echo "TODO: Outputting data for table 2."
 
 tab3:
-	echo "Outputting data for table 3."
+	echo "TODO: Outputting data for table 3."
 
 tab4:
-	echo "Outputting data for table 4."
+	python subsequences/lcs.py -s postgresdb -P lupe -D lupe -U lupe -o results/tab4.csv
 
 toppaths:
 	echo "Outputting data for top paths in text on page 9."
