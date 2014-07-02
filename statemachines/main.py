@@ -1,14 +1,11 @@
 from queryutils.databases import PostgresDB, SQLite3DB
 from queryutils.files import CSVFiles, JSONFiles
-from queryutils.splunktypes import lookup_categories
-from graph import create_fsm
-from json import dump
+from graph import compute_graph, create_fsm
+from paths import compute_top_paths
 from os import path
-import re
 
-START_TOKEN = "<start>"  # token you want to represent as start of query
-END_TOKEN = "<end>"  # token you want to represent as end of query
-ALLOWED_TYPES = ["user", "vmware:perf:", "solaris3-web-access"]
+ALLOWED_TYPES = ["user", "vmware:perf:", "solaris3-web-access", "path"]
+MAX_PIPES = 5  # max number of pipes on path
 
 # N: 203691
 # total: 19260 versus 17085
@@ -20,87 +17,20 @@ SOURCES = {
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-def main(type, source, output):
+def main(type, source, output, threshold):
     edges = output + "-edges"
-    if not path.isfile(edges):
-        compute_graph(type, source, output)
+    if type == "path":
+        if not path.isfile(edges):
+            compute_graph(type, source, output)
+        else:
+            print "Notice: edges file named %s already exists, outputtting paths based on that." % edges
+        compute_top_paths(edges, output)
     else:
-        print "Notice: edges file named %s already exists, drawing graph based on that." % edges
-    create_fsm(output, edges)
-
-def compute_graph(type, source, output): 
-    graph = {}
-    ntotal = nincluded = nusers = 0.
-    for user in source.get_users_with_queries():
-        print "Getting data for user " + str(user.name) + "..."
-        queries = set([q.text for q in user.noninteractive_queries])
-        if type != "user":
-            queries = filter_queries_of_source(type, queries)
-        ntotal += len(user.queries)
-        nincluded += len(queries)
-        user_graph = compute_user_graph(queries)
-        for first in user_graph:
-            for second in user_graph[first]:
-                edge = (first, second)
-                if edge not in graph:
-                    graph[edge] = 0.
-                graph[edge] += lookup_edge(first, second, user_graph)
-        nusers += 1.
-        print "ntotalext user...\n"
-    graph = {k: v / nusers for k, v in graph.items()}
-    output_graph_data(graph, output + "-edges", nincluded, ntotal)
-
-def filter_queries_of_source(source, queries): # TODO: Test this.
-    filtered = []
-    st = re.compile(".*\s*(sourcetype)\s*(=)\s*['\"]?("+source+").*['\"]?")
-    s = re.compile(".*\s*(source)\s*(=)\s*['\"]?("+source+").*['\"]?")
-    for query in queries:
-        if st.match(query) or s.match(query):
-            filtered.append(query)
-    return filtered
-
-def compute_user_graph(queries):
-    graph = {}
-    for query in queries:
-        graph = tally_completions(query, graph)
-    return graph
-
-def tally_completions(query, graph):
-    categories = lookup_categories(query)
-    if categories != []:
-        categories = [START_TOKEN] + categories + [END_TOKEN]
-        for i, first in enumerate(categories[:-1]):
-            second = categories[i+1]
-            if not first in graph:
-                graph[first] = {}
-            if not second in graph[first]:
-                graph[first][second] = 0
-            graph[first][second] += 1
-    return graph
-
-def lookup_edge(node1, node2, table):
-    if table.get(node1) and table.get(node1).get(node2):
-        counts = table.get(node1)
-        total = float(sum(counts.values()))
-        percent = table.get(node1).get(node2) / total
-        # if percent >= THRESHOLD:
-        #     print node1 + ": " + node2
-        return percent
-    return 0
-
-def output_graph_data(graph, output, proportion, total):
-    data = {}
-    if proportion < 500:
-        data["title"] = "%d queries" % int(proportion)
-    else:
-        fraction = proportion / total
-        data["title"] = "{0:.2f}% of queries".format(float(fraction) * 100)
-    data["edges"] = []
-    for edge in sorted(graph, key=graph.get, reverse=True):
-        data["edges"].append([edge] + [graph[edge]])
-    with open(output, 'w') as f:
-        dump(data, f, indent=4, separators=(',', ': '))
-
+        if not path.isfile(edges):
+            compute_graph(type, source, output)
+        else:
+            print "Notice: edges file named %s already exists, drawing graph based on that." % edges
+        create_fsm(output, edges, threshold)
 
 def lookup(dictionary, lookup_keys):
     return [dictionary[k] for k in lookup_keys]
@@ -126,7 +56,11 @@ if __name__ == "__main__":
                         help="the name of the output file")
     parser.add_argument("-t", "--type",
                         help="the type of graph to make. Options are: \
-                        'user', 'vmware:perf:', 'solaris3-web-access'.")
+                        'user', 'vmware:perf:', 'solaris3-web-access', 'path'.")
+    parser.add_argument("-r", "--threshold",
+                        help="the threshold that determines which edges are drawn \
+                        -- only edges with weights above this are drawn. \
+                        Should be in (0.0, 1.0]")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -142,7 +76,9 @@ if __name__ == "__main__":
             "Allowed types are %s" % str(ALLOWED_TYPES))
     if args.output is None:
         args.output = "%s_fsm" % args.type
+    if args.threshold is None:
+        args.threshold = .2
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(args.type, source, args.output)
+    main(args.type, source, args.output, float(args.threshold))

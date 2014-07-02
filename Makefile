@@ -10,6 +10,7 @@ tab4:
 
 toppaths:
 	echo "Outputting data for top paths in text on page 9."
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig3 -t path
 
 fig2:
 	python categories/histogram.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig2
@@ -18,10 +19,10 @@ fig3:
 	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig3 -t user
 
 fig4:
-	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig4 -t solaris3-web-access
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig4 -t solaris3-web-access -r 0.0
 
 fig5:
-	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig5 -t vmware:perf:
+	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig5 -t vmware:perf: -r 0.0
 
 fig6:
 	python clustering/main.py -s postgresdb -U lupe -P lupe -D lupe -p 9 -f filters01 -l filters -n -d 10 -o results/fig6.clusters -u results/fig6.mouseovers -t results/fig6.features
