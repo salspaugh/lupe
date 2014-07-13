@@ -6,7 +6,7 @@ import searches01
 import filters01
 import aggregates01
 import augments01
-import texts01
+import querygroups01
 
 FEATURES = sessions01.FEATURES + \
             sessions02.FEATURES + \
@@ -15,5 +15,5 @@ FEATURES = sessions01.FEATURES + \
             filters01.FEATURES + \
             aggregates01.FEATURES + \
             augments01.FEATURES + \
-            texts01.FEATURES
+            querygroups01.FEATURES
 

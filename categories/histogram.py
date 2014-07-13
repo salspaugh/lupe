@@ -32,19 +32,19 @@ def create_histogram(categories, total_queries, output):
     names = sorted(categories, key=categories.get, reverse=True)
     percents = convert_to_percents(categories)
     counts = sorted(categories.values(), reverse=True)
-    ig = plt.figure(figsize=(13.5, 8.0))
+    fig = plt.figure(figsize=(13.5, 8.0))
     index = np.arange(len(categories))
-    rects = plt.bar(index, counts, 1, color='c')
+    rects = plt.bar(index, counts, 1, color="c")
     plt.xlabel("Category", fontsize=20)
     plt.ylabel("Number of Commands", fontsize=20)
     plt.xticks(index + 0.5, names, rotation=-45, fontsize=20,
                rotation_mode="anchor", ha="left")
     plt.text(14, 252500, "N = " + str(total_queries) + " queries",
-             fontsize=16, bbox=dict(facecolor='none', edgecolor='black', pad=10.0))
+             fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
     plt.yticks(np.arange(0, 300001, 50000), fontsize=20)
-    plt.tick_params(bottom='off')
+    plt.tick_params(bottom="off")
     autolabel(rects, percents)
-    plt.autoscale(enable=True, axis='x', tight=None)
+    plt.autoscale(enable=True, axis="x", tight=None)
     plt.tight_layout()
     plt.savefig(output + ".png", dpi=400)
 
@@ -63,8 +63,8 @@ def autolabel(rects, counts):
         height = rect.get_height()
         plt.text(
             rect.get_x() + rect.get_width() / 2., height +
-            1000, '%s' % (counts[ii]),
-            ha='center', va='bottom', fontsize=20)
+            1000, "%s" % (counts[ii]),
+            ha="center", va="bottom", fontsize=20)
 
 def lookup(dictionary, lookup_keys):
     return [dictionary[k] for k in lookup_keys]
