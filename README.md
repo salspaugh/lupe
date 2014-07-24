@@ -1,6 +1,6 @@
 #### How to run this code
 
-_ Coming soon ... _
+*Coming soon ...*
 
 #### Contributors
 
@@ -12,7 +12,3 @@ of this were:
 * Sara Alspaugh
 * Jessica Lin
 * Beidi Chen
-
-#### TODO
-
-* Move rare commands into data directory?
