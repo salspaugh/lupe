@@ -1,15 +1,9 @@
-from logging import DEBUG, getLogger as get_logger
-from logging.handlers import RotatingFileHandler
-
-BYTES_IN_MB = 1048576
-FIVE_MB = 5*BYTES_IN_MB
+from logging import getLogger as get_logger
 
 logger = get_logger("lupe")
-logger.setLevel(DEBUG)
-handler = RotatingFileHandler("lupe.log", maxBytes=FIVE_MB)
-handler.setLevel(DEBUG)
-logger.addHandler(handler)
 
+from argparse import ArgumentParser
+from data import *
 from pipeline import *
 from queryutils.files import CSVFiles, JSONFiles
 from queryutils.databases import PostgresDB, SQLite3DB
@@ -106,6 +100,15 @@ def get_args():
         exit()
     return args
 
+def get_feature_modules():
+    this_dir = path.dirname(path.realpath(__file__))
+    features_dir = path.join(this_dir, "features")
+    features = []
+    for (dirpath, dirnames, filenames) in walk(features_dir):
+        for filename in filenames:
+            if not filename == "__init__.py" and filename[-3:] == ".py":
+                features.append(filename[:-3])
+    return features
 
 def check_args(args):
     
@@ -132,8 +135,6 @@ def check_args(args):
         args.outputclusters = "outputclusters"
     if not args.outputmouseovers:
         args.outputmouseovers = "outputmouseovers"
-    if not args.normalize:
-        args.normalize = False
 
 
 def main(src, srcargs, pipeline, nclusters, featurecode, 

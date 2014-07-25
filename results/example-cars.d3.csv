@@ -1,0 +1,897 @@
+cluster,X,Y,mouseover
+0.0,218.712161248,50.4635760285,"
+        Claimant: 289
+        Claimant age range: 17-20 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 8
+        "
+0.0,178.321427754,67.6523886749,"
+        Claimant: 282
+        Claimant age range: 17-20 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 8
+        "
+0.0,-203.664550492,139.989934833,"
+        Claimant: 133
+        Claimant age range: 17-20 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 4
+        "
+0.0,-152.585223705,58.671408374,"
+        Claimant: 160
+        Claimant age range: 17-20 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 1
+        "
+0.0,305.643673572,-72.1356997535,"
+        Claimant: 372
+        Claimant age range: 17-20 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 10
+        "
+0.0,100.070647719,27.5302822096,"
+        Claimant: 249
+        Claimant age range: 17-20 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 28
+        "
+0.0,210.673996737,9.87843184289,"
+        Claimant: 288
+        Claimant age range: 17-20 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 1
+        "
+0.0,-326.436218603,185.607135479,"
+        Claimant: 11
+        Claimant age range: 17-20 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 1
+        "
+0.0,-105.798274421,26.951817681,"
+        Claimant: 189
+        Claimant age range: 17-20 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 9
+        "
+0.0,175.192637707,-8.77378225698,"
+        Claimant: 288
+        Claimant age range: 17-20 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 13
+        "
+0.0,-108.132260853,68.7657218854,"
+        Claimant: 179
+        Claimant age range: 17-20 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 1
+        "
+0.0,-385.641572145,241.422495091,"
+        Claimant:  
+        Claimant age range: 17-20 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 0
+        "
+0.0,277.784275724,-225.055450081,"
+        Claimant: 763
+        Claimant age range: 17-20 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 3
+        "
+0.0,248.804173515,-239.175587241,"
+        Claimant: 850
+        Claimant age range: 17-20 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 2
+        "
+0.0,-382.746589679,193.544346797,"
+        Claimant:  
+        Claimant age range: 17-20 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 0
+        "
+0.0,-344.242068377,266.345120119,"
+        Claimant:  
+        Claimant age range: 17-20 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 0
+        "
+0.0,249.855031226,19.3747386449,"
+        Claimant: 302
+        Claimant age range: 21-24 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 18
+        "
+0.0,22.638131676,97.3736237484,"
+        Claimant: 194
+        Claimant age range: 21-24 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 31
+        "
+0.0,-96.627944232,230.019717185,"
+        Claimant: 135
+        Claimant age range: 21-24 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 10
+        "
+0.0,-137.155131748,96.2555320429,"
+        Claimant: 166
+        Claimant age range: 21-24 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 4
+        "
+0.0,280.714938472,-161.473176156,"
+        Claimant: 420
+        Claimant age range: 21-24 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 59
+        "
+0.0,49.6047510946,-91.1768007813,"
+        Claimant: 243
+        Claimant age range: 21-24 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 96
+        "
+0.0,-37.8847635231,75.8485950667,"
+        Claimant: 196
+        Claimant age range: 21-24 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 13
+        "
+0.0,-128.436784527,256.496595599,"
+        Claimant: 135
+        Claimant age range: 21-24 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 3
+        "
+0.0,133.73847118,-0.49323173378,"
+        Claimant: 268
+        Claimant age range: 21-24 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 44
+        "
+0.0,212.617665702,-98.3413735652,"
+        Claimant: 343
+        Claimant age range: 21-24 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 39
+        "
+0.0,176.369222591,27.7222630404,"
+        Claimant: 293
+        Claimant age range: 21-24 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 7
+        "
+0.0,-194.399206097,258.566310158,"
+        Claimant: 104
+        Claimant age range: 21-24 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 2
+        "
+0.0,297.394966785,-117.978770816,"
+        Claimant: 407
+        Claimant age range: 21-24 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 24
+        "
+0.0,205.031319761,-32.6800556191,"
+        Claimant: 320
+        Claimant age range: 21-24 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 18
+        "
+0.0,-59.7820847543,11.4917156104,"
+        Claimant: 205
+        Claimant age range: 21-24 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 2
+        "
+0.0,-356.809225454,155.80360684,"
+        Claimant:  
+        Claimant age range: 21-24 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 0
+        "
+0.0,108.368829827,-27.7414692687,"
+        Claimant: 268
+        Claimant age range: 25-29 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 56
+        "
+0.0,151.223453102,-40.364472274,"
+        Claimant: 285
+        Claimant age range: 25-29 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 55
+        "
+0.0,-73.3323141588,90.7294453622,"
+        Claimant: 181
+        Claimant age range: 25-29 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 17
+        "
+0.0,-159.14921927,286.376418141,"
+        Claimant: 110
+        Claimant age range: 25-29 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 12
+        "
+0.0,131.367395648,-166.855229788,"
+        Claimant: 275
+        Claimant age range: 25-29 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 125
+        "
+0.0,150.787135725,-230.499108563,"
+        Claimant: 243
+        Claimant age range: 25-29 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 172
+        "
+0.0,-55.1247930226,121.69144458,"
+        Claimant: 179
+        Claimant age range: 25-29 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 36
+        "
+0.0,136.717189642,49.5685343938,"
+        Claimant: 264
+        Claimant age range: 25-29 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 10
+        "
+0.0,33.4820158131,-222.76811804,"
+        Claimant: 334
+        Claimant age range: 25-29 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 163
+        "
+0.0,92.0355516089,-183.482750899,"
+        Claimant: 274
+        Claimant age range: 25-29 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 129
+        "
+0.0,-12.0521608264,8.42874068041,"
+        Claimant: 208
+        Claimant age range: 25-29 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 18
+        "
+0.0,-128.130072139,173.55313529,"
+        Claimant: 150
+        Claimant age range: 25-29 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 8
+        "
+0.0,207.662782155,-140.052593851,"
+        Claimant: 383
+        Claimant age range: 25-29 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 72
+        "
+0.0,181.708209502,-68.8934235056,"
+        Claimant: 305
+        Claimant age range: 25-29 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 50
+        "
+0.0,-194.495268522,215.624395133,"
+        Claimant: 116
+        Claimant age range: 25-29 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 6
+        "
+0.0,-71.3577807595,-203.171185103,"
+        Claimant: 636
+        Claimant age range: 25-29 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 1
+        "
+0.0,68.5119094198,1.71237665909,"
+        Claimant: 236
+        Claimant age range: 30-34 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 43
+        "
+0.0,139.176597257,-75.0405293483,"
+        Claimant: 270
+        Claimant age range: 30-34 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 53
+        "
+0.0,-91.2057721177,185.655307294,"
+        Claimant: 160
+        Claimant age range: 30-34 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 15
+        "
+0.0,-224.605549579,235.064020698,"
+        Claimant: 110
+        Claimant age range: 30-34 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 12
+        "
+0.0,113.885605823,-218.552341329,"
+        Claimant: 259
+        Claimant age range: 30-34 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 179
+        "
+0.0,144.515597145,-276.385739202,"
+        Claimant: 226
+        Claimant age range: 30-34 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 211
+        "
+0.0,-51.851426677,206.911927726,"
+        Claimant: 161
+        Claimant age range: 30-34 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 39
+        "
+0.0,-199.648773257,299.442012408,"
+        Claimant: 107
+        Claimant age range: 30-34 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 19
+        "
+0.0,29.4179274352,-266.412437874,"
+        Claimant: 340
+        Claimant age range: 30-34 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 197
+        "
+0.0,86.5778987087,-148.507285037,"
+        Claimant: 260
+        Claimant age range: 30-34 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 125
+        "
+0.0,-15.6800632281,104.641450191,"
+        Claimant: 189
+        Claimant age range: 30-34 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 30
+        "
+0.0,-273.371023229,186.886987196,"
+        Claimant: 104
+        Claimant age range: 30-34 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 9
+        "
+0.0,-9.90901440212,-196.477995936,"
+        Claimant: 400
+        Claimant age range: 30-34 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 104
+        "
+0.0,254.554399591,-94.3708174759,"
+        Claimant: 349
+        Claimant age range: 30-34 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 55
+        "
+0.0,-164.131202315,126.381146857,"
+        Claimant: 147
+        Claimant age range: 30-34 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 8
+        "
+0.0,-303.357478982,232.134828516,"
+        Claimant: 65
+        Claimant age range: 30-34 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 2
+        "
+0.0,26.1815739965,31.7682266999,"
+        Claimant: 207
+        Claimant age range: 35-39 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 43
+        "
+0.0,-75.6702085683,279.172402709,"
+        Claimant: 129
+        Claimant age range: 35-39 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 73
+        "
+0.0,-93.0278423647,147.982937718,"
+        Claimant: 157
+        Claimant age range: 35-39 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 21
+        "
+0.0,-235.027803646,198.982859113,"
+        Claimant: 113
+        Claimant age range: 35-39 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 14
+        "
+0.0,75.3378969251,-272.923837951,"
+        Claimant: 208
+        Claimant age range: 35-39 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 191
+        "
+0.0,177.251184903,-294.919762397,"
+        Claimant: 214
+        Claimant age range: 35-39 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 219
+        "
+0.0,-204.690803289,60.397123111,"
+        Claimant: 149
+        Claimant age range: 35-39 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 46
+        "
+0.0,-168.917365037,161.232038085,"
+        Claimant: 137
+        Claimant age range: 35-39 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 23
+        "
+0.0,111.468954277,-258.05437304,"
+        Claimant: 251
+        Claimant age range: 35-39 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 210
+        "
+0.0,47.5194026835,-171.594569994,"
+        Claimant: 232
+        Claimant age range: 35-39 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 131
+        "
+0.0,5.0346815892,62.9367410363,"
+        Claimant: 204
+        Claimant age range: 35-39 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 32
+        "
+0.0,-161.775062813,194.330509874,"
+        Claimant: 141
+        Claimant age range: 35-39 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 8
+        "
+0.0,51.8980507488,-131.280063865,"
+        Claimant: 233
+        Claimant age range: 35-39 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 119
+        "
+0.0,226.080355656,-63.132214034,"
+        Claimant: 325
+        Claimant age range: 35-39 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 43
+        "
+0.0,-29.9795297499,40.6018129388,"
+        Claimant: 207
+        Claimant age range: 35-39 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 4
+        "
+0.0,-348.083452405,220.675675766,"
+        Claimant:  
+        Claimant age range: 35-39 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 0
+        "
+0.0,86.4615651695,-98.5797583254,"
+        Claimant: 254
+        Claimant age range: 40-49 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 90
+        "
+0.0,10.4916919111,-77.3735382659,"
+        Claimant: 213
+        Claimant age range: 40-49 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 98
+        "
+0.0,-185.854376105,96.8265016936,"
+        Claimant: 149
+        Claimant age range: 40-49 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 35
+        "
+0.0,-262.59294143,231.880330994,"
+        Claimant: 98
+        Claimant age range: 40-49 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 22
+        "
+0.0,69.8809032013,-366.25239956,"
+        Claimant: 218
+        Claimant age range: 40-49 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 380
+        "
+0.0,40.750634303,-398.236882337,"
+        Claimant: 209
+        Claimant age range: 40-49 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 434
+        "
+0.0,-51.3534250018,-59.6210804039,"
+        Claimant: 172
+        Claimant age range: 40-49 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 97
+        "
+0.0,-243.756345385,317.068351993,"
+        Claimant: 110
+        Claimant age range: 40-49 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 59
+        "
+0.0,28.6321478115,-358.112513845,"
+        Claimant: 239
+        Claimant age range: 40-49 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 401
+        "
+0.0,113.12039854,-332.162909595,"
+        Claimant: 250
+        Claimant age range: 40-49 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 253
+        "
+0.0,11.57780827,150.540821999,"
+        Claimant: 174
+        Claimant age range: 40-49 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 50
+        "
+0.0,-161.953547884,234.948471571,"
+        Claimant: 129
+        Claimant age range: 40-49 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 15
+        "
+0.0,-10.3992981819,-254.109037383,"
+        Claimant: 387
+        Claimant age range: 40-49 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 199
+        "
+0.0,158.343846439,-117.65839097,"
+        Claimant: 299
+        Claimant age range: 40-49 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 88
+        "
+0.0,283.217302646,-11.8330378051,"
+        Claimant: 325
+        Claimant age range: 40-49 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 8
+        "
+0.0,-130.048002623,211.427205336,"
+        Claimant: 137
+        Claimant age range: 40-49 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 9
+        "
+0.0,68.0070050556,-49.6897455679,"
+        Claimant: 251
+        Claimant age range: 50-59 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 69
+        "
+0.0,13.6736596395,-134.827618619,"
+        Claimant: 227
+        Claimant age range: 50-59 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 120
+        "
+0.0,-25.3520125651,142.756048098,"
+        Claimant: 172
+        Claimant age range: 50-59 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 42
+        "
+0.0,-237.547914985,271.891799086,"
+        Claimant: 98
+        Claimant age range: 50-59 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 35
+        "
+0.0,83.3051178021,-405.117808792,"
+        Claimant: 196
+        Claimant age range: 50-59 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 366
+        "
+0.0,111.353543638,-375.477231383,"
+        Claimant: 229
+        Claimant age range: 50-59 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 353
+        "
+0.0,-95.197466507,-54.0881925735,"
+        Claimant: 164
+        Claimant age range: 50-59 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 95
+        "
+0.0,-234.198815811,105.702712803,"
+        Claimant: 132
+        Claimant age range: 50-59 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 45
+        "
+0.0,62.760436761,-324.891485346,"
+        Claimant: 268
+        Claimant age range: 50-59 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 310
+        "
+0.0,487.783688873,-86.3084706392,"
+        Claimant: 250
+        Claimant age range: 50-59 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 148
+        "
+0.0,-15.3653286715,183.901837241,"
+        Claimant: 175
+        Claimant age range: 50-59 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 33
+        "
+0.0,-130.967384487,139.129858634,"
+        Claimant: 152
+        Claimant age range: 50-59 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 13
+        "
+0.0,221.141986505,-178.946561668,"
+        Claimant: 391
+        Claimant age range: 50-59 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 105
+        "
+0.0,32.0130028515,-15.0800225453,"
+        Claimant: 228
+        Claimant age range: 50-59 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 46
+        "
+0.0,268.858999773,-53.9304061194,"
+        Claimant: 346
+        Claimant age range: 50-59 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 10
+        "
+0.0,-103.583971337,112.110531416,"
+        Claimant: 167
+        Claimant age range: 50-59 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 1
+        "
+0.0,105.005491192,-63.874775007,"
+        Claimant: 264
+        Claimant age range: 60+ 
+        Vehicle type: A
+        Vehicle age range: 0-3
+        Number of claims: 64
+        "
+0.0,-25.3527987763,-99.8394141016,"
+        Claimant: 198
+        Claimant age range: 60+ 
+        Vehicle type: A
+        Vehicle age range: 4-7
+        Number of claims: 100
+        "
+0.0,-55.6499637261,163.780226958,"
+        Claimant: 167
+        Claimant age range: 60+ 
+        Vehicle type: A
+        Vehicle age range: 8-9
+        Number of claims: 43
+        "
+0.0,-276.07071861,131.848143231,"
+        Claimant: 114
+        Claimant age range: 60+ 
+        Vehicle type: A
+        Vehicle age range: 10+
+        Number of claims: 53
+        "
+0.0,106.408983831,-296.451500385,"
+        Claimant: 224
+        Claimant age range: 60+ 
+        Vehicle type: B
+        Vehicle age range: 0-3
+        Number of claims: 228
+        "
+0.0,147.184705968,-322.538786263,"
+        Claimant: 193
+        Claimant age range: 60+ 
+        Vehicle type: B
+        Vehicle age range: 4-7
+        Number of claims: 233
+        "
+0.0,51.9816438153,135.007810529,"
+        Claimant: 178
+        Claimant age range: 60+ 
+        Vehicle type: B
+        Vehicle age range: 8-9
+        Number of claims: 73
+        "
+0.0,-278.034170247,278.076746171,"
+        Claimant: 101
+        Claimant age range: 60+ 
+        Vehicle type: B
+        Vehicle age range: 10+
+        Number of claims: 44
+        "
+0.0,75.95169939,-228.637920862,"
+        Claimant: 269
+        Claimant age range: 60+ 
+        Vehicle type: C
+        Vehicle age range: 0-3
+        Number of claims: 183
+        "
+0.0,114.680300643,-123.254351557,"
+        Claimant: 258
+        Claimant age range: 60+ 
+        Vehicle type: C
+        Vehicle age range: 4-7
+        Number of claims: 103
+        "
+0.0,63.0900112191,58.0308906957,"
+        Claimant: 227
+        Claimant age range: 60+ 
+        Vehicle type: C
+        Vehicle age range: 8-9
+        Number of claims: 20
+        "
+0.0,-238.987062035,159.015499533,"
+        Claimant: 119
+        Claimant age range: 60+ 
+        Vehicle type: C
+        Vehicle age range: 10+
+        Number of claims: 6
+        "
+0.0,249.047315288,-134.805338896,"
+        Claimant: 385
+        Claimant age range: 60+ 
+        Vehicle type: D
+        Vehicle age range: 0-3
+        Number of claims: 62
+        "
+0.0,241.716999152,-23.5971535346,"
+        Claimant: 324
+        Claimant age range: 60+ 
+        Vehicle type: D
+        Vehicle age range: 4-7
+        Number of claims: 22
+        "
+0.0,-70.6754637949,51.6351722059,"
+        Claimant: 192
+        Claimant age range: 60+ 
+        Vehicle type: D
+        Vehicle age range: 8-9
+        Number of claims: 6
+        "
+0.0,-202.5160942,179.823763816,"
+        Claimant: 123
+        Claimant age range: 60+ 
+        Vehicle type: D
+        Vehicle age range: 10+
+        Number of claims: 6
+        "

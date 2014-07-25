@@ -5,7 +5,7 @@
 svg {
   margin-right: 300px;
   margin-left: 250px;
-  margin-top: 300px;
+  margin-top: 800px;
 }
 
 body {
@@ -61,11 +61,13 @@ body {
   <option value="/results/fig6.clusters.d3.csv">Figure 6</option>
   <option value="/results/fig7.clusters.d3.csv">Figure 7</option>
   <option value="/results/fig8.clusters.d3.csv">Figure 8</option>
+  <option value="/example-cars.d3.csv">Car Insurance Claims</option>
+  <option value="/example-ships.d3.csv">Ships</option>
 </select>
 
-<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+<script src="/clustering/visualize/jquery-1.11.0.min.js"></script>
+<script src="/clustering/visualize/d3.v3.min.js"></script>
+<script src="/clustering/visualize/d3.tip.v0.6.3.js"></script>
 <script>
 
 
@@ -98,8 +100,6 @@ $("select").change(function() {
       .offset([-10, 0])
       .html(function(d) {
         m = d.mouseover.replace(/\n/g, "<br/>").replace(/ /g, "&nbsp;").replace(/\t/g, "&nbsp&nbsp;&nbsp;&nbsp;&nbsp;");
-        m = m.replace("| metadata type=sourcetypes | search totalCount > 0", "DEBUG-SOURCETYPES");
-        m = m.replace("|metadata type=sourcetypes | search totalCount > 0", "DEBUG-SOURCETYPES");
         return "<div>" + m + "</div>";
       });
 

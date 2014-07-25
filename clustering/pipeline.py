@@ -1,16 +1,11 @@
-from logging import DEBUG, getLogger as get_logger
-from logging.handlers import RotatingFileHandler
+from logging import getLogger as get_logger
 from time import time
 
 logger = get_logger("lupe")
 start = time()
 
-from argparse import ArgumentParser
 from clustering import spectral, kmedoids
-from json import dump
-from featurize import get_features, featurize_obj
 from numpy import linalg, cov, argsort, dot, empty, zeros, array, max, abs, isnan
-from os import path, walk
 from tsnewrapper import calc_tsne
 
 import csv
@@ -20,107 +15,45 @@ elapsed = time() - start
 logger.debug("[pipeline] - Time to import (seconds): " + str(elapsed))
 
 PERPLEXITY = 50
-
-class Clusterees(object):
-
-    QUERIES = "queries"
-    SESSIONS = "sessions"
-    FILTERS = "filters"
-    AUGMENTS = "augments"
-    AGGREGATES = "aggregates"
-    QUERYGROUPS = "querygroups"
+NON_PCA_PIPELINES = [1, 5, 6, 8]
+PCA_PIPELINES = [2, 3, 4, 7, 9]
 
 
-def fetch_data(source, clusterees):
-    logger.debug("[pipeline] - Fetching data.")
-    start = time()
-    data = None
-    fetchers = {
-        Clusterees.SESSIONS: (source.get_sessions, label_session),
-        Clusterees.FILTERS: (source.get_unique_filters, label_parsetree),
-        Clusterees.AUGMENTS: (source.get_unique_augments, label_parsetree),
-        Clusterees.AGGREGATES: (source.get_unique_aggregates, label_parsetree),
-        Clusterees.QUERYGROUPS: (source.get_query_groups, label_query_group),
-    }
-    fetcher = fetchers.get(clusterees, None)
-    if fetcher is None:
-        raise RuntimeError(
-            "No valid set of objects to cluster over has been chosen.")
-    fetch = fetcher[0]
-    label = fetcher[1]
-    data = []
-    mouseovers = []
-    for d in fetch():
-        data.append(d)
-        mouseovers.append(label(d))
-    data = [d for d in data if d is not None]
-    elapsed = time() - start 
-    logger.debug("[pipeline] - Time to fetch data (seconds): " + str(elapsed))
-    logger.debug("[pipeline] - Rows of data fetched: " + str(len(data)))
-    return data, mouseovers
-
-def label_session(session):
-    label = ["User: " + session.user.name]
-    for query in session.queries:
-        label.append("".join([str(int(round(query.time))), "\t", wrap_text(query.text)]))
-    return "\n".join(label)
-
-def label_parsetree(node):
-    return node.str_tree()
-
-def label_query_group(querygroup):
-    return str(querygroup)
-
-def output_mouseovers(mouseovers, filename):
-    filename = ".".join([filename, "json"])
-    with open(filename, 'w') as f:
-        dump(mouseovers, f, sort_keys=True, indent=4, separators=(',', ': '))
-
-def featurize(objects, features):
-    logger.debug("[pipeline] - Computing features.")
-    start = time()
-    features = get_features(features)
-    feature_vectors = [fid + feature_vector for (fid, feature_vector) in
-                       [([obj.id], featurize_obj(obj, features))
-                        for obj in objects]
-                       if feature_vector is not None]
-    if not feature_vectors:
-        raise RuntimeError(
-            "Featurizing was unsuccessful -- no features computed.")
-    elapsed = time() - start 
-    logger.debug("[pipeline] - Time to featurize (seconds): " + str(elapsed))
-    f = feature_vectors[0]
-    logger.debug("[pipeline] - Number of features per object computed: " + str(len(f)))
-    return feature_vectors
+def main(inputpoints, inputmouseovers, outputclusters, pipeline, nclusters, clusterer, pcadims, normalize):
+    features = read_points(inputpoints)
+    points = [feature[1:] for feature in features]  # Exclude the object ID.
+    ids = [feature[0] for feature in features] # The object IDs.
+    if normalize:
+        points = normalize_points(points)
+    mouseovers = read_mouseovers(inputmouseovers) 
+    clusters, projected_points = run_pipeline(pipeline, nclusters, points, outputclusters, clusterer, pcadims)
+    output_clusters(ids, clusters, outputclusters)
+    plot(projected_points, clusters, outputclusters)
+    output_visualization_data(projected_points, clusters, mouseovers, outputclusters)
 
 
-def output_features(feature_vectors, filename):
-    filename = ".".join([filename, "csv"])
-    with open(filename, 'w') as f:
-        writer = csv.writer(f)
-        for v in feature_vectors:
-            writer.writerow(v)
+def read_points(input):
+    points = []
+    with open(input) as inputpoints:
+        reader = csv.reader(inputpoints)
+        for row in reader:
+            vector = []
+            for elem in row:
+                feature = -1.
+                try:
+                    feature = float(elem)
+                except:
+                    logger.debug("[pipeline] - Error casting feature element to float.")
+                vector.append(feature)
+            points.append(vector)
+        return points
 
 
-def fetch_features(filename):
-    logger.debug("[pipeline] - Fetching features.")
-    start = time()
-    with open(filename, 'r') as f:
-        reader = csv.reader(f)
-        features = [[float(r) for r in row] for row in reader]
-    elapsed = time() - start 
-    logger.debug("[pipeline] - Time to fetch features (seconds): " + str(elapsed))
-    logger.debug("[pipeline] - Number of vectors fetched: " + str(len(features)))
-    logger.debug("[pipeline] - Number of features per vector: " + str(len(features[0])))
-    return features
-
-
-def fetch_mouseovers(filename):
-    logger.debug("[pipeline] - Fetching mouseover labels.")
-    with open(filename, 'r') as f:
-        reader = csv.reader(f)
-        mouseovers = [mouseover for (mouseover, ) in reader]
-    return mouseovers
+def read_mouseovers(input):
+    with open(input) as inputmouseovers:
+        reader = csv.reader(inputmouseovers)
+        mouseovers = [row[0] for row in reader]
+        return mouseovers
 
 
 def normalize_points(points):
@@ -260,13 +193,59 @@ def output_visualization_data(points, labels, mouseovers, filename):
             row = [cluster] + list(point) + [mouseover]
             writer.writerow(row)
 
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+    parser = ArgumentParser("Project and cluster points.")
+    parser.add_argument("-i", "--points",
+                        help="REQUIRED: the data points in .csv format to project and cluster (first column is id)")
+    parser.add_argument("-m", "--mouseovers",
+                        help="REQUIRED: the mouseover labels in .csv format for the data points")
+    parser.add_argument("-o", "--clusters",
+                        help="the output filename to write the cluster assingments (default: clusters)")
+    parser.add_argument("-p", "--pipeline", type=int,
+                        help="REQUIRED: pipeline to run. \
+                        (pipelines: \
+                            [1: cluster, t-SNE], \
+                            [2: cluster, PCA, t-SNE], \
+                            [3: PCA, cluster, t-SNE], \
+                            [4: PCA, cluster, PCA], \
+                            [5: cluster, PCA], \
+                            [6: t-SNE, cluster], \
+                            [7: PCA, t-SNE, cluster] \
+                            [8: t-SNE] \
+                            [9: PCA, t-SNE]")
+    parser.add_argument("-k", "--nclusters", type=int,
+                        help="number of clusters to look for (default: 4)")
+    parser.add_argument("-c", "--clusterer",
+                        help="method to use for clustering (options: spectral, kmedoids; default: kmedoids)")
+    parser.add_argument("-d", "--pcadims", type=int,
+                        help="dimensions to reduce to via PCA (default: None)")
+    parser.add_argument("-n", "--normalize", action="store_true",
+                        help="whether or not to normalize (default: False)")
+    
+    args = parser.parse_args()
+    if all([arg is None for arg in vars(args).values()]):
+        parser.print_help()
+        exit()
 
-def get_feature_modules():
-    this_dir = path.dirname(path.realpath(__file__))
-    features_dir = path.join(this_dir, "features")
-    features = []
-    for (dirpath, dirnames, filenames) in walk(features_dir):
-        for filename in filenames:
-            if not filename == "__init__.py" and filename[-3:] == ".py":
-                features.append(filename[:-3])
-    return features
+    if not args.points:
+        raise RuntimeError("You must specify input points.")
+    if not args.mouseovers:
+        raise RuntimeError("You must specify mouse-over points.")
+    if not args.pipeline:
+        raise RuntimeError("You must specify a pipeline to run.")
+    if not args.nclusters:
+        args.nclusters = 4
+    if not args.clusterer:
+        args.clusterer = "kmedoids"
+    
+    if (args.pipeline in NON_PCA_PIPELINES) and args.pcadims is not None:
+        raise RuntimeWarning(
+            "Incompatible option specified: PCA is not used with this pipeline.")
+    if (args.pipeline in PCA_PIPELINES) and args.pcadims is None:
+        raise RuntimeWarning(
+            "You need to specify the number of dimensions to reduce to using PCA (using the -d flag).")
+
+
+    main(args.points, args.mouseovers, args.clusters, 
+        args.pipeline, args.nclusters, args.clusterer, args.pcadims, args.normalize)
