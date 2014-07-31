@@ -8,12 +8,22 @@ END_TOKEN = "<end>"  # token you want to represent as end of query
 THRESHOLD = 0.2  # Change to 0 if you want to show all edges
 EDGE_FORMAT = "{:.2f}"
 
-def compute_graph(type, source, output): 
+class QueryType(object):
+    INTERACTIVE = "interactive"
+    SCHEDULED = "scheduled"
+
+def compute_graph(type, querytype, source, output): 
     graph = {}
     ntotal = nincluded = nusers = 0.
     for user in source.get_users_with_queries():
         print "Getting data for user " + str(user.name) + "..."
-        queries = set([q.text for q in user.noninteractive_queries])
+        if querytype == QueryType.INTERACTIVE:
+            queries = [q for q in user.interactive_queries 
+                if not q.is_suspicious]
+        elif querytype == QueryType.SCHEDULED:
+            queries = set([q.text for q in user.noninteractive_queries])
+        else:
+            raise runtimeerror("invalid query type.")
         if type != "user":
             queries = filter_queries_of_source(type, queries)
         ntotal += len(user.queries)
@@ -29,7 +39,7 @@ def compute_graph(type, source, output):
             nusers += 1.
         elif type == "user":
             nusers += 1
-        print "ntotalext user...\n"
+        print "next user...\n"
     graph = {k: v / nusers for k, v in graph.items()}
     output_graph_data(graph, output + "-edges", nincluded, ntotal)
 
@@ -102,7 +112,7 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
         "Project": State('Project'),
         "Rename": State('Rename'),
         "Reorder": State('Reorder'),
-        "User-Defined": State(r'User\nDefined'),
+        "External": State(r'External'),
         "Transform": State('Transform'),
         "Transpose": State('Transpose'),
         "Set": State('Set'),
@@ -112,11 +122,11 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
 
     remaining_dsts = ['Aggregate', 'Cache', 'Augment', "Filter",
              "Input", "Join", 'Macro', 'Meta', "Miscellaneous", 'Output',
-             "Project", 'Read Metadata', 'Rename', 'Reorder', 'User-Defined', "Transform",
+             "Project", 'Read Metadata', 'Rename', 'Reorder', 'External', "Transform",
              'Transpose', 'Set', 'Window']
     remaining_srcs = ['Aggregate', 'Cache', 'Augment', "Filter",
              "Input", "Join", 'Macro', 'Meta', "Miscellaneous", 'Output',
-             "Project", 'Read Metadata', 'Rename', 'Reorder', 'User-Defined', "Transform",
+             "Project", 'Read Metadata', 'Rename', 'Reorder', 'External', "Transform",
              'Transpose', 'Set', 'Window']
 
     graph_data = read_graph_data(datafilename)
@@ -154,7 +164,7 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
     for state in remaining_dsts:
         missing.append(states[state].name)
 
-    filename = "%s-%s.png" % (label, str(threshold))
+    filename = "%s-%s.pdf" % (label, str(threshold))
     get_graph(fsm, title=title, missing=missing).draw(filename, prog='dot')
 
 def read_graph_data(filename):

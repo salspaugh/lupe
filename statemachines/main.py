@@ -17,17 +17,17 @@ SOURCES = {
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-def main(type, source, output, threshold):
+def main(type, source, querytype, output, threshold):
     edges = output + "-edges"
     if type == "path":
         if not path.isfile(edges):
-            compute_graph(type, source, output)
+            compute_graph(type, querytype, source, output)
         else:
             print "Notice: edges file named %s already exists, outputtting paths based on that." % edges
         compute_top_paths(edges, output)
     else:
         if not path.isfile(edges):
-            compute_graph(type, source, output)
+            compute_graph(type, querytype, source, output)
         else:
             print "Notice: edges file named %s already exists, drawing graph based on that." % edges
         create_fsm(output, edges, threshold)
@@ -61,6 +61,8 @@ if __name__ == "__main__":
                         help="the threshold that determines which edges are drawn \
                         -- only edges with weights above this are drawn. \
                         Should be in (0.0, 1.0]")
+    parser.add_argument("-q", "--querytype",
+                        help="the type of queries (scheduled or interactive)")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -78,7 +80,9 @@ if __name__ == "__main__":
         args.output = "%s_fsm" % args.type
     if args.threshold is None:
         args.threshold = .2
+    if args.querytype is None:
+        raise RuntimeError("You must specify a query type.")
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(args.type, source, args.output, float(args.threshold))
+    main(args.type, source, args.querytype, args.output, float(args.threshold))

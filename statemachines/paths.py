@@ -35,7 +35,7 @@ def generate_possible_paths(graph, prev, paths, path, freq, count):
         generate_possible_paths(graph, curr, paths, path + curr + ' ', freq * graph[prev][curr], count + 1)
 
 def write_top_paths(paths, output):
-    output = "%s_paths" % output
+    output = "%s-paths" % output
     with open(output, 'w') as f:
         paths = sorted(paths, key=paths.get, reverse=True)
         dump(paths, f, indent=4, separators=(',', ': '))
