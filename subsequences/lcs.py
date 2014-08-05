@@ -14,11 +14,21 @@ SOURCES = {
 MIN_LEN = 2
 MAX_LEN = 6
 
-def longest_common_subsequences(source, output):
+class QueryType(object):
+    INTERACTIVE = "interactive"
+    SCHEDULED = "scheduled"
+
+def longest_common_subsequences(source, querytype, output):
     nusers = nqueries = 0.
     sequences = defaultdict(int)
     for user in source.get_users_with_queries():
-        queries = set([q.text for q in user.noninteractive_queries])
+        if querytype == QueryType.INTERACTIVE:
+            queries = [q for q in user.interactive_queries 
+                if not q.is_suspicious]
+        elif querytype == QueryType.SCHEDULED:
+            queries = set([q.text for q in user.noninteractive_queries])
+        else:
+            raise runtimeerror("invalid query type.")
         nqueries += len(queries)
         for query in queries: # TODO: Filter out bad queries?
             categories = lookup_categories(query)
@@ -62,6 +72,8 @@ if __name__ == "__main__":
                         help="the database for Postgres")
     parser.add_argument("-o", "--output",
                         help="the name of the output file")
+    parser.add_argument("-q", "--querytype",
+                        help="the type of queries (scheduled or interactive)")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -71,7 +83,9 @@ if __name__ == "__main__":
             "You must specify where to fetch the data and the corresponding arguments (-s or --source).")
     if args.output is None:
         args.output = "%s_fsm" % args.type
+    if args.querytype is None:
+        raise RuntimeError("You must specify a query type.")
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    longest_common_subsequences(source, args.output)
+    longest_common_subsequences(source, args.querytype, args.output)

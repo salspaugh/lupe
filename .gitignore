@@ -1,4 +1,5 @@
 # Project specific files
+results/*
 *.dump
 *.d3*
 *parsetab.py

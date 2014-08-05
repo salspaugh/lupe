@@ -1,6 +1,17 @@
-from logging import getLogger as get_logger
+from logging import getLogger, basicConfig, DEBUG
+from logging.handlers import RotatingFileHandler
+import logging
 
-logger = get_logger("lupe")
+BYTES_IN_MB = 1048576
+FIVE_MB = 5*BYTES_IN_MB
+
+logger = getLogger("lupe")
+logger.setLevel(DEBUG)
+handler = RotatingFileHandler("lupe.log", maxBytes=FIVE_MB)
+handler.setLevel(DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 from argparse import ArgumentParser
 from data import *

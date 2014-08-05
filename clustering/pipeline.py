@@ -9,6 +9,7 @@ from numpy import linalg, cov, argsort, dot, empty, zeros, array, max, abs, isna
 from tsnewrapper import calc_tsne
 
 import csv
+import json
 import pylab
 
 elapsed = time() - start
@@ -30,7 +31,7 @@ def main(inputpoints, inputmouseovers, outputclusters, pipeline, nclusters, clus
     output_clusters(ids, clusters, outputclusters)
     plot(projected_points, clusters, outputclusters)
     output_visualization_data(projected_points, clusters, mouseovers, outputclusters)
-
+    output_projected_points(ids, projected_points, features)
 
 def read_points(input):
     points = []
@@ -192,6 +193,18 @@ def output_visualization_data(points, labels, mouseovers, filename):
         for (cluster, point, mouseover) in zip(labels, points, mouseovers):
             row = [cluster] + list(point) + [mouseover]
             writer.writerow(row)
+
+def output_projected_points(ids, points, features, filename):
+    fn = ".".join([filename, "projected-points.json"])
+    data = []
+    for i, p, f in zip(ids, points, features):
+        obj = {}
+        obj["id"] = i
+        obj["point"] = p
+        obj["features"] = f
+        data.append(obj)
+    with open(fn, 'w') as f:
+        json.dump(f, data)
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

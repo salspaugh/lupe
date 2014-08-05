@@ -16,12 +16,19 @@ class QueryType(object):
     SCHEDULED = "scheduled"
 
 def main(source, querytype, output):
-    stages_counts, queries_counts, nqueries = tally_stages_counts(source, querytype)
+    stages_counts, stages_commands_count, queries_counts, queries_commands_count, nqueries = tally_stages_counts(source, querytype)
+    print_tranformation_command_percents(stages_commands_count, queries_commands_count)
+    print "Number of Filter stages: %d" % stages_counts["Filter"]
+    print "Number of Augment stages: %d" % stages_counts["Augment"]
+    print "Number of Aggregate stages: %d" % stages_counts["Aggregate"]
     create_histogram(stages_counts, queries_counts, nqueries, output)
 
 def tally_stages_counts(source, querytype):
+    # TODO: FIXME: Fix this terribly designed function!
     stages_counts = defaultdict(int)
+    stages_commands_count = defaultdict(dict)
     queries_counts = defaultdict(int)
+    queries_commands_count = defaultdict(dict)
     nqueries = 0
     source.connect()
     if querytype == QueryType.INTERACTIVE:
@@ -33,14 +40,52 @@ def tally_stages_counts(source, querytype):
     for row in cursor.fetchall():
         query = row["text"]
         categories = lookup_categories(query)
+        commands = lookup_commands(query)
         if len(categories) > 0:
             nqueries += 1
-            for category in categories:
+            for category, command in zip(categories, commands):
                 stages_counts[category] += 1
+                if not command in stages_commands_count[category]:
+                    stages_commands_count[category][command] = 0
+                stages_commands_count[category][command] += 1
             for category in set(categories):
                 queries_counts[category] += 1
+                if not command in queries_commands_count[category]:
+                    queries_commands_count[category][command] = 0
+                queries_commands_count[category][command] += 1
     source.close()
-    return stages_counts, queries_counts, nqueries
+    return stages_counts, stages_commands_count, queries_counts, queries_commands_count, nqueries
+
+def lookup_commands(querystring):
+    commands = []
+    tokens = tokenize_query(querystring)
+    for token in tokens:
+        val = token.value.strip().lower()
+        if token.type == "EXTERNAL_COMMAND":
+            commands.append(val)
+        elif token.type == "MACRO":
+            commands.append(val)
+        elif token.type not in ["ARGS", "PIPE", "LBRACKET", "RBRACKET"]:
+            commands.append(val)
+    return commands
+
+def print_tranformation_command_percents(stages_commands_count, queries_commands_count):
+    print "Stages: "
+    for (transformation, commands) in stages_commands_count.iteritems():
+        print "\t%s" % transformation
+        total = float(sum(commands.values()))
+        commands = sorted(commands.iteritems(), key=lambda x: x[1], reverse=True)
+        for (cmd, cnt) in commands:
+            pct = float(cnt) / total
+            print "\t\t%50s\t%7d\t%8f" % (cmd, cnt, pct)
+    print "Queries: "
+    for (transformation, commands) in queries_commands_count.iteritems():
+        print "\t%s" % transformation
+        total = float(sum(commands.values()))
+        commands = sorted(commands.iteritems(), key=lambda x: x[1], reverse=True)
+        for (cmd, cnt) in commands:
+            pct = float(cnt) / total
+            print "\t\t%50s\t%7d\t%8f" % (cmd, cnt, pct)
 
 
 def create_histogram(stages_per_transformation, queries_per_transformation, nqueries, output):

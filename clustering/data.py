@@ -1,6 +1,10 @@
 from featurize import get_features, featurize_obj
 from json import dump
+from logging import getLogger as get_logger
 from os import path, walk
+from time import time
+
+logger = get_logger("lupe")
 
 class Clusterees(object):
 
