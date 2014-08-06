@@ -15,19 +15,11 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
-def main(source, querytype, output):
-    stages_counts, stages_commands_count, queries_counts, queries_commands_count, nqueries = tally_stages_counts(source, querytype)
-    print_tranformation_command_percents(stages_commands_count, queries_commands_count)
-    print "Number of Filter stages: %d" % stages_counts["Filter"]
-    print "Number of Augment stages: %d" % stages_counts["Augment"]
-    print "Number of Aggregate stages: %d" % stages_counts["Aggregate"]
-    create_histogram(stages_counts, queries_counts, nqueries, output)
-
-def main(source, querytype):
-    tfm_dicts, cmd_dicts = tally_all(source, querytype)
-    print_transformation_data(tfm_dicts)
-    print_command_data(cmd_dicts)
-    plot_barcharts()
+def main(source, query_type, output, user_weighted):
+    tfm_dicts, cmd_dicts = tally_all(source, query_type)
+    print_transformation_data(tfm_dicts, output, weighted=user_weighted)
+    print_command_data(cmd_dicts, output, weighted=user_weighted)
+    #plot_barcharts()
 
 def tally_all(source, querytype):
 
@@ -51,35 +43,42 @@ def tally_all(source, querytype):
         commands = lookup_commands(query)
 
         # Number of stages per user of each type.
-        tfms_cmds = dict(zip(transforms, commands))
+        tfms_cmds = dict(zip(transforms, commands)).items()
         tally_one(user, stage_cnt, stage_cmd_cnt, tfms_cmds)
         
         # Number of queries per user of each transform type.
         # Command selected arbitrarily.
-        uniq_tfm = dict(zip(transforms, commands))
+        uniq_tfm = dict(zip(transforms, commands)).items()
         tally_one(user, query_tfm_cnt, query_tfm_cmd_cnt, uniq_tfm)
         
         # Number of queries per user of each command.
         # Some transforms will be double-counted.
-        uniq_cmd = dict(zip(commands, transforms))
+        uniq_cmd = [(y,x) for (x,y) in dict(zip(commands, transforms)).items()]
         tally_one(user, query_cmd_cnt, query_cmd_cmd_cnt, uniq_cmd)
     
     return tfm_dicts, cmd_dicts
 
 def fetch_data(source, querytype):
-    if querytype == QueryType.INTERACTIVE:
-        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false") 
-    elif querytype == QueryType.SCHEDULED:
-        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false") 
-    else:
-        raise RuntimeError("Invalid query type.")
+    source.connect()
+    cursor = source.execute("SELECT id FROM users WHERE user_type is null LIMIT 20")
     for row in cursor.fetchall():
-        query = row["text"]
+        user_id = row["id"]
+        if querytype == QueryType.INTERACTIVE:
+            sql = "SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false"
+        elif querytype == QueryType.SCHEDULED:
+            sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false AND user_id=%s" % source.wildcard
+        else:
+            raise RuntimeError("Invalid query type.")
+        cursor = source.execute(sql, user_id) 
+        for row in cursor.fetchall():
+            query = row["text"]
+            yield (user_id, query)
+    source.close()
 
 def init_dictionaries(key, tfm_dicts, cmd_dicts):
-    for d in tfm_dict:
+    for d in tfm_dicts:
         init_defaultdict_int(key, d)
-    for d in cmd_dict:
+    for d in cmd_dicts:
         init_dict(key, d)
 
 def init_defaultdict_int(key, dct):
@@ -104,8 +103,8 @@ def lookup_commands(querystring):
     return commands
 
 def tally_one(user, tfm_cnt, cmd_cnt, tfms_cmds):
-    for (tfm, cmd) in tfms_cmds.iteritems():
-        tfm_cnt[user][transform] += 1
+    for (tfm, cmd) in tfms_cmds:
+        tfm_cnt[user][tfm] += 1
         if not tfm in cmd_cnt[user]:
             cmd_cnt[user][tfm] = defaultdict(int)
         cmd_cnt[user][tfm][cmd] += 1
@@ -117,7 +116,7 @@ def tally_transformation_percents_weighted(tfm_cnts_by_user):
         for tfm, cnt in tmf_cnts.iteritems():
             pct = float(cnt) / total
             tfm_pcts[tfm].append(pct)
-    tfm_pcts = { tfm: avg(pcts) for (tfm, pct) in tfm_pcts.iteritems() }
+    tfm_pcts = { tfm: mean(pcts) for (tfm, pct) in tfm_pcts.iteritems() }
     return tfm_pcts
 
 def tally_transformation_counts_weighted(tfm_cnts_by_user):
@@ -125,7 +124,7 @@ def tally_transformation_counts_weighted(tfm_cnts_by_user):
     for (user, cnts) in tfm_cnts_by_user.iteritems():
         for tfm, cnt in cnts.iteritems():
             tfm_cnts[tfm].append(cnt)
-    tfm_cnts = { tfm: avg(cnt) for (tfm, pct) in tfm_pcts.iteritems() }
+    tfm_cnts = { tfm: mean(cnt) for (tfm, pct) in tfm_pcts.iteritems() }
     return tfm_cnts
 
 def tally_transformation_percents_unweighted(tfm_cnts_by_user):
@@ -154,43 +153,99 @@ def tally_command_percents_weighted(tfm_cmd_cnts_by_user):
                 pct = float(cnt) / total
                 tfm_cmd_pcts[tfm][cmd].append(pct)
     for (tfm, cmd_pcts) in tfm_cmd_pcts.iteritems():
-        tfm_cmd_pcts[tfm] = { cmd: avg(pcts) for (cmd, pct) in cmd_pcts.iteritems() }
+        tfm_cmd_pcts[tfm] = { cmd: mean(pcts) for (cmd, pct) in cmd_pcts.iteritems() }
     return tfm_cmd_pcts 
 
 def tally_command_counts_weighted(tfm_cmd_cnts_by_user):
-    pass
+    tfm_cmd_cnts_agg = {}
+    for (user, tfm_cmd_cnts) in tfm_cmd_cnts_by_user.iteritems():
+        for (tfm, cmd_cnts) in tfm_cmd_cnts.iteritems():
+            if not tfm in tfm_cmd_cnts_agg:
+                tfm_cmd_cnts_agg[tfm] = defaultdict(list)
+            total = float(sum(cmd_cnts.values()))
+            for (cmd, cnt) in cmd_cnts.iteritems():
+                tfm_cmd_cnts_agg[tfm][cmd].append(cnt)
+    for (tfm, cmd_cnts) in tfm_cmd_cnts_agg.iteritems():
+        tfm_cmd_cnts_agg[tfm] = { cmd: mean(cnts) for (cmd, cnts) in cmd_cnts.iteritems() }
+    return tfm_cmd_cnts_agg
 
 def tally_command_percents_unweighted(tfm_cmd_cnts_by_user):
-    pass
+    tfm_cmd_pcts = {}
+    for (user, tfm_cmd_cnts) in tfm_cmd_cnts_by_user.iteritems():
+        for (tfm, cmd_cnts) in tfm_cmd_cnts.iteritems():
+            if not tfm in tfm_cmd_pcts:
+                tfm_cmd_pcts[tfm] = defaultdict(int)
+            for (cmd, cnt) in cmd_cnts.iteritems():
+                tfm_cmd_pcts[tfm][cmd] += cnt
+    for (tfm, cmd_cnts) in tfm_cmd_pcts.iteritems():
+        total = float(sum(tfm_cmd_pcts[tfm].values()))
+        for (cmd, cnt) in cmd_cnts.iteritems():
+            tfm_cmd_pcts[tfm][cmd] = float(cnt) / total
+    return tfm_cmd_pcts
 
 def tally_command_counts_unweighted(tfm_cmd_cnts_by_user):
-    pass
+    tfm_cmd_cnts_agg = {}
+    for (user, tfm_cmd_cnts) in tfm_cmd_cnts_by_user.iteritems():
+        for (tfm, cmd_cnts) in tfm_cmd_cnts.iteritems():
+            if not tfm in tfm_cmd_cnts_agg:
+                tfm_cmd_cnts_agg[tfm] = defaultdict(int)
+            for (cmd, cnt) in cmd_cnts.iteritems():
+                tfm_cmd_cnts_agg[tfm][cmd] += cnt
+    return tfm_cmd_cnts_agg
 
-def print_transformation_data(tfm_cnts_by_user, output, unweighted=False):
+def print_transformation_data(tfm_cnts_by_user, output, weighted=True):
     (stage_cnts_by_user, query_tfm_cnts_by_user, query_cmd_cnts_by_user) = tfm_cnts_by_user
 
     out = "%s-weighted-transformation-counts.txt" % output
     tally_percents = tally_transformation_percents_weighted
     tally_counts = tally_transformation_counts_weighted
-    if unweighted:
+    if not weighted:
         out = "%s-unweighted-transformation-counts.txt" % output
         tally_percents = tally_transformation_percents_unweighted
         tally_counts = tally_transformation_counts_unweighted
    
-    stages_cnts = tally_counts(stage_cnts_by_user)
+    stage_cnts = tally_counts(stage_cnts_by_user)
     query_tfm_cnts = tally_counts(query_tfm_cnts_by_user)
     query_cmd_cnts = tally_counts(query_cmd_cnts_by_user)
-    stages_pcts = tally_percents(stage_cnts_by_user)
+    stage_pcts = tally_percents(stage_cnts_by_user)
     query_tfm_pcts = tally_percents(query_tfm_cnts_by_user)
-    query_cmd_cnts = tally_percents(query_cmd_cnts_by_user)
-    transforms = [k for (k,v) in sorted(stage_cnts, key=lambda x: x[1], reverse=True)]
+    query_cmd_pcts = tally_percents(query_cmd_cnts_by_user)
+    transforms = [k for (k,v) in sorted(stage_cnts.iteritems(), key=lambda x: x[1], reverse=True)]
 
     header = ("transformation", "nstages", "%stages", "nqueries-tfm", "%queries-tfm", "nqueries-cmd", "%queries-cmd")
     with open(out, "w") as out:
         out.write("%16s %14s %14s %14s %14s %14s %14s\n" % header)
         for t in transforms:
-            line = (t, stages_cnts[t], stages_pcts[t], query_tfm_cnts[t], query_tfm_pcts[t], query_cmd_cnts[t], query_cmd_ptcs[t])
+            line = (t, stage_cnts[t], stage_pcts[t], query_tfm_cnts[t], query_tfm_pcts[t], query_cmd_cnts[t], query_cmd_pcts[t])
             out.write("%16s %14d %14f %14d %14f %14d %14f\n" % line)
+
+def print_command_data(tfm_cmd_cnts_by_user, output, weighted=True):
+    (stage_cmd_cnts_by_user, query_tfm_cmd_cnts_by_user, query_cmd_cmd_cnts_by_user) = tfm_cmd_cnts_by_user
+
+    out = "%s-weighted-command-counts.txt" % output
+    tally_percents = tally_command_percents_weighted
+    tally_counts = tally_command_counts_weighted
+    if not weighted:
+        out = "%s-unweighted-command-counts.txt" % output
+        tally_percents = tally_command_percents_unweighted
+        tally_counts = tally_command_counts_unweighted
+
+    stage_cmd_cnts = tally_counts(stage_cmd_cnts_by_user)
+    query_tfm_cmd_cnts = tally_counts(query_tfm_cmd_cnts_by_user)
+    query_cmd_cmd_cnts = tally_counts(query_cmd_cmd_cnts_by_user)
+    stage_cmd_pcts = tally_percents(stage_cmd_cnts_by_user)
+    query_tfm_cmd_pcts = tally_percents(query_tfm_cmd_cnts_by_user)
+    query_cmd_cmd_pcts = tally_percents(query_cmd_cmd_cnts_by_user)
+
+    header = ("transformation", "command", "nstages", "%stages", "nqueries-tfm", "%queries-tfm", "nqueries-cmd", "%queries-cmd")
+    with open(out, "w") as out:
+        out.write("%16s %30s %14s %14s %14s %14s %14s %14s\n" % header)
+        for (t, cmd_stats) in stage_cmd_cnts.iteritems():
+            cmds = [k for (k, v) in sorted(cmd_stats.iteritems(), key=lambda x: x[1], reverse=True)]
+            for c in cmds:
+                line = (t, c, stage_cmd_cnts[t][c], query_tfm_cmd_cnts[t][c], query_cmd_cmd_cnts[t][c], 
+                              stage_cmd_pcts[t][c], query_tfm_cmd_pcts[t][c], query_cmd_cmd_pcts[t][c]) 
+                out.write("%16s %30s %14s %14s %14s %14s %14s %14s\n" % line)
 
 def create_histogram(stages_per_transformation, queries_per_transformation, nqueries, output):
     nstages = float(sum(stages_per_transformation.values()))
@@ -257,6 +312,8 @@ if __name__ == "__main__":
                         help="the name of the output file")
     parser.add_argument("-q", "--querytype",
                         help="the type of queries (scheduled or interactive)")
+    parser.add_argument("-w", "--weighted", action="store_true",
+                        help="if true, average across users")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -271,4 +328,4 @@ if __name__ == "__main__":
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source, args.querytype, args.output)
+    main(source, args.querytype, args.output, args.weighted)
