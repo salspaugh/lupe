@@ -197,6 +197,7 @@ def main(src, srcargs, pipeline, nclusters, featurecode,
     output_clusters(ids, clusters, outputclusters)
     plot(projected_points, clusters, outputclusters)
     output_visualization_data(projected_points, clusters, mouseovers, outputclusters)
+    output_projected_points(ids, projected_points, features, outputclusters)
 
 
 def lookup(dictionary, lookup_keys):

@@ -31,7 +31,7 @@ def main(inputpoints, inputmouseovers, outputclusters, pipeline, nclusters, clus
     output_clusters(ids, clusters, outputclusters)
     plot(projected_points, clusters, outputclusters)
     output_visualization_data(projected_points, clusters, mouseovers, outputclusters)
-    output_projected_points(ids, projected_points, features)
+    output_projected_points(ids, projected_points, features, outputclusters)
 
 def read_points(input):
     points = []
@@ -200,11 +200,11 @@ def output_projected_points(ids, points, features, filename):
     for i, p, f in zip(ids, points, features):
         obj = {}
         obj["id"] = i
-        obj["point"] = p
-        obj["features"] = f
+        obj["point"] = list(p)
+        obj["features"] = list(f)
         data.append(obj)
     with open(fn, 'w') as f:
-        json.dump(f, data)
+        json.dump(data, f)
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -258,7 +258,6 @@ if __name__ == "__main__":
     if (args.pipeline in PCA_PIPELINES) and args.pcadims is None:
         raise RuntimeWarning(
             "You need to specify the number of dimensions to reduce to using PCA (using the -d flag).")
-
 
     main(args.points, args.mouseovers, args.clusters, 
         args.pipeline, args.nclusters, args.clusterer, args.pcadims, args.normalize)

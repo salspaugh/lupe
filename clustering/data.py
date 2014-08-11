@@ -3,6 +3,7 @@ from json import dump
 from logging import getLogger as get_logger
 from os import path, walk
 from time import time
+import csv
 
 logger = get_logger("lupe")
 
@@ -53,7 +54,7 @@ def label_session(session):
 
 
 def label_parsetree(node):
-    return node.str_tree()
+    return ": ".join([node.id, node.str_tree()])
 
 
 def label_query_group(querygroup):

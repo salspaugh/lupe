@@ -19,17 +19,13 @@ SOURCES = {
 
 def main(type, source, querytype, output, threshold):
     edges = output + "-edges"
+    if not path.isfile(edges):
+        compute_graph(type, querytype, source, output)
+    else:
+        print "Notice: edges file named %s already exists, using that." % edges
     if type == "path":
-        if not path.isfile(edges):
-            compute_graph(type, querytype, source, output)
-        else:
-            print "Notice: edges file named %s already exists, outputtting paths based on that." % edges
         compute_top_paths(edges, output)
     else:
-        if not path.isfile(edges):
-            compute_graph(type, querytype, source, output)
-        else:
-            print "Notice: edges file named %s already exists, drawing graph based on that." % edges
         create_fsm(output, edges, threshold)
 
 def lookup(dictionary, lookup_keys):

@@ -14,20 +14,28 @@ class QueryType(object):
 
 def compute_graph(type, querytype, source, output): 
     graph = {}
+    distinct = set()
     ntotal = nincluded = nusers = 0.
+    #for (uid, text) in source.get_uid_with_text(interactive=(type == QueryType.INTERACTIVE)):
+    distinct_queries = open("%s-distinct-queries.txt" % output, "w")
     for user in source.get_users_with_queries():
         print "Getting data for user " + str(user.name) + "..."
         if querytype == QueryType.INTERACTIVE:
-            queries = [q for q in user.interactive_queries 
+            if user.user_type == "suspicious": continue
+            queries = [q.text for q in user.interactive_queries 
                 if not q.is_suspicious]
         elif querytype == QueryType.SCHEDULED:
             queries = set([q.text for q in user.noninteractive_queries])
         else:
-            raise runtimeerror("invalid query type.")
+            raise RuntimeError("Invalid query type.")
         if type != "user":
             queries = filter_queries_of_source(type, queries)
         ntotal += len(user.queries)
         nincluded += len(queries)
+        distinct = distinct.union(queries)
+        for query in queries:
+            distinct_queries.write(query)
+            distinct_queries.write("\n")
         user_graph = compute_user_graph(queries)
         for first in user_graph:
             for second in user_graph[first]:
@@ -41,7 +49,9 @@ def compute_graph(type, querytype, source, output):
             nusers += 1
         print "next user...\n"
     graph = {k: v / nusers for k, v in graph.items()}
+    print "NUMBER DISTINCT QUERIES: %d" % len(distinct)
     output_graph_data(graph, output + "-edges", nincluded, ntotal)
+    distinct_queries.close()
 
 def filter_queries_of_source(source, queries): # TODO: Test this.
     filtered = []

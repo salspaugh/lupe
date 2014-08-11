@@ -1,8 +1,7 @@
 from collections import defaultdict
-import numpy as np
+import numpy
 import matplotlib.pyplot as plt
 from queryutils.databases import PostgresDB, SQLite3DB
-from queryutils.files import CSVFiles, JSONFiles
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
 
@@ -15,103 +14,157 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
-def main(source, querytype, output):
-    stages_counts, stages_commands_count, queries_counts, queries_commands_count, nqueries = tally_stages_counts(source, querytype)
-    print_tranformation_command_percents(stages_commands_count, queries_commands_count)
-    print "Number of Filter stages: %d" % stages_counts["Filter"]
-    print "Number of Augment stages: %d" % stages_counts["Augment"]
-    print "Number of Aggregate stages: %d" % stages_counts["Aggregate"]
-    create_histogram(stages_counts, queries_counts, nqueries, output)
+def main(source, query_type, user_weighted, output):
+    stage_pcts, nstages, query_pcts, nqueries = tally(source, query_type, user_weighted)
+    label = "weighted" if user_weighted else "unweighted"
+    output = "%s-%s" % (output, label)
+    stages_textbox = "%.1f stages per user" if user_weighted else "%d stages"
+    queries_textbox = "%.1f queries per user" if user_weighted else "%d queries"
+    stages_textbox = stages_textbox % nstages
+    queries_textbox = queries_textbox % nqueries
+    plot_barchart(stage_pcts, stages_textbox, query_pcts, queries_textbox, output)
 
-def tally_stages_counts(source, querytype):
-    # TODO: FIXME: Fix this terribly designed function!
-    stages_counts = defaultdict(int)
-    stages_commands_count = defaultdict(dict)
-    queries_counts = defaultdict(int)
-    queries_commands_count = defaultdict(dict)
+def tally(source, query_type, user_weighted):
+    if user_weighted:
+        return tally_weighted(source, query_type)
+    else:
+        return tally_unweighted(source, query_type)
+
+def tally_weighted(source, query_type):
+
+    stage_cnt = {}
+    nstages = 0
+    nstages_per_user = defaultdict(int)
+
+    query_cnt = {}
     nqueries = 0
+    nqueries_per_user = defaultdict(int)
+    all_transforms = set()
+
+    for (user, query) in fetch_queries_by_user(source, query_type):
+
+        transforms = lookup_categories(query)
+
+        nstages += len(transforms)
+        nstages_per_user[user] += len(transforms)
+        nqueries += 1
+        nqueries_per_user[user] += 1
+
+        if not user in stage_cnt:
+            stage_cnt[user] = defaultdict(int)
+        if not user in query_cnt:
+            query_cnt[user] = defaultdict(int)
+        
+        for t in transforms:
+            stage_cnt[user][t] += 1
+        for t in set(transforms):
+            all_transforms.add(t)
+            query_cnt[user][t] += 1
+
+    stage_pct = defaultdict(list)
+    for (user, transform_counts) in stage_cnt.iteritems():
+        user_nstages = float(sum(transform_counts.values()))
+        assert user_nstages == nstages_per_user[user]
+        for t in all_transforms:
+            count = transform_counts.get(t, 0.)
+            user_pct = count / user_nstages
+            stage_pct[t].append(user_pct)
+    stage_pct = { t: numpy.mean(pcts) for (t, pcts) in stage_pct.iteritems() }
+
+    query_pct = defaultdict(list)
+    for (user, transform_counts) in query_cnt.iteritems():
+        user_nquerys = float(nqueries_per_user[user])
+        for t in all_transforms:
+            count = transform_counts.get(t, 0.)
+            user_pct = count / user_nquerys
+            query_pct[t].append(user_pct)
+    query_pct = { t: numpy.mean(pcts) for (t, pcts) in query_pct.iteritems() }
+
+    nstages_per_user = numpy.mean(nstages_per_user.values())
+    nqueries_per_user = numpy.mean(nqueries_per_user.values())
+    return stage_pct, nstages_per_user, query_pct, nqueries_per_user
+
+def tally_unweighted(source, query_type):
+
+    stage_cnt = defaultdict(int)
+    nstages = 0
+
+    query_cnt = defaultdict(int)
+    nqueries = 0
+    
+    for query in fetch_queries(source, query_type):
+
+        transforms = lookup_categories(query)
+
+        nstages += len(transforms)
+        nqueries += 1
+        
+        for t in transforms:
+            stage_cnt[t] += 1
+        for t in set(transforms):
+            query_cnt[t] += 1
+    
+    stage_pct = { t: float(cnt)/nstages for (t, cnt) in stage_cnt.iteritems() }
+    query_pct = { t: float(cnt)/nqueries for (t, cnt) in query_cnt.iteritems() }
+
+    return stage_pct, nstages, query_pct, nqueries
+
+def fetch_queries_by_user(source, query_type):
     source.connect()
-    if querytype == QueryType.INTERACTIVE:
-        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false") 
-    elif querytype == QueryType.SCHEDULED:
-        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false") 
+    if query_type == QueryType.INTERACTIVE:
+        ucursor = source.execute("SELECT id FROM users WHERE user_type is null")
+    elif query_type == QueryType.SCHEDULED:
+        ucursor = source.execute("SELECT id FROM users")
     else:
         raise RuntimeError("Invalid query type.")
-    for row in cursor.fetchall():
-        query = row["text"]
-        categories = lookup_categories(query)
-        commands = lookup_commands(query)
-        if len(categories) > 0:
-            nqueries += 1
-            for category, command in zip(categories, commands):
-                stages_counts[category] += 1
-                if not command in stages_commands_count[category]:
-                    stages_commands_count[category][command] = 0
-                stages_commands_count[category][command] += 1
-            for category in set(categories):
-                queries_counts[category] += 1
-                if not command in queries_commands_count[category]:
-                    queries_commands_count[category][command] = 0
-                queries_commands_count[category][command] += 1
+    for row in ucursor.fetchall():
+        user_id = row["id"]
+        if query_type == QueryType.INTERACTIVE:
+            sql = "SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false AND user_id=%s" % source.wildcard
+        elif query_type == QueryType.SCHEDULED:
+            sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false AND user_id=%s" % source.wildcard
+        else:
+            raise RuntimeError("Invalid query type.")
+        qcursor = source.execute(sql, (user_id, )) 
+        for row in qcursor.fetchall():
+            query = row["text"]
+            yield (user_id, query)
     source.close()
-    return stages_counts, stages_commands_count, queries_counts, queries_commands_count, nqueries
 
-def lookup_commands(querystring):
-    commands = []
-    tokens = tokenize_query(querystring)
-    for token in tokens:
-        val = token.value.strip().lower()
-        if token.type == "EXTERNAL_COMMAND":
-            commands.append(val)
-        elif token.type == "MACRO":
-            commands.append(val)
-        elif token.type not in ["ARGS", "PIPE", "LBRACKET", "RBRACKET"]:
-            commands.append(val)
-    return commands
+def fetch_queries(source, query_type):
+    source.connect()
+    if query_type == QueryType.INTERACTIVE:
+        sql = "SELECT text FROM queries, users \
+                WHERE queries.user_id=users.id AND \
+                    is_interactive=true AND \
+                    is_suspicious=false AND \
+                    user_type is null"
+    elif query_type == QueryType.SCHEDULED:
+        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
+    else:
+        raise RuntimeError("Invalid query type.")
+    cursor = source.execute(sql)
+    for row in cursor.fetchall():
+        yield row["text"]
+    source.close()
 
-def print_tranformation_command_percents(stages_commands_count, queries_commands_count):
-    print "Stages: "
-    for (transformation, commands) in stages_commands_count.iteritems():
-        print "\t%s" % transformation
-        total = float(sum(commands.values()))
-        commands = sorted(commands.iteritems(), key=lambda x: x[1], reverse=True)
-        for (cmd, cnt) in commands:
-            pct = float(cnt) / total
-            print "\t\t%50s\t%7d\t%8f" % (cmd, cnt, pct)
-    print "Queries: "
-    for (transformation, commands) in queries_commands_count.iteritems():
-        print "\t%s" % transformation
-        total = float(sum(commands.values()))
-        commands = sorted(commands.iteritems(), key=lambda x: x[1], reverse=True)
-        for (cmd, cnt) in commands:
-            pct = float(cnt) / total
-            print "\t\t%50s\t%7d\t%8f" % (cmd, cnt, pct)
-
-
-def create_histogram(stages_per_transformation, queries_per_transformation, nqueries, output):
-    nstages = float(sum(stages_per_transformation.values()))
-    nqueries = float(nqueries)
-
-    spcts = { k: v/nstages*100 for (k,v) in stages_per_transformation.iteritems() }
-    qpcts = { k: v/nqueries*100 for (k,v) in queries_per_transformation.iteritems() }
-    spcts = sorted(spcts.iteritems(), key=lambda x: x[1], reverse=True)
+def plot_barchart(stage_percents, stages_label, query_percents, queries_label, output):
+   
+    spcts = sorted(stage_percents.iteritems(), key=lambda x: x[1], reverse=True)
     names = [k for (k,v) in spcts]
-    qpcts = [qpcts[k] for (k,v) in spcts]
-    spcts = [v for (k,v) in spcts]
-
-    #fig = plt.figure(figsize=(13.5, 8.0))
-    index = np.arange(len(stages_per_transformation))
-
-    print "transformation, % stages, % queries"
+    qpcts = [query_percents[k]*100 for (k,v) in spcts]
+    spcts = [v*100 for (k,v) in spcts]
     for (n, s, q) in zip(names, spcts, qpcts):
-        print "%s, %f, %f" % (n, s, q)
+        print "%s, %.1f, %.1f" % (n, s, q)
     
+    index = numpy.arange(len(stage_percents))
+
     plt.subplot(2, 1, 1)
     plt.bar(index, spcts, 1, color="r")
     plt.ylabel("% stages", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
     plt.xticks(index + 0.5, ["" for n in names])
-    plt.text(12, 72, "N = " + str(int(nstages)) + " stages",
+    plt.text(10.5, 72, "N = %s" % stages_label,
         fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
     plt.tick_params(bottom="off")
     
@@ -122,7 +175,7 @@ def create_histogram(stages_per_transformation, queries_per_transformation, nque
     plt.xticks(index + 0.5, names, rotation=-45, fontsize=16,
        rotation_mode="anchor", ha="left")
     #plt.xlabel("Transformation Type", fontsize=20)
-    plt.text(12, 80, "N = " + str(int(nqueries)) + " queries",
+    plt.text(10, 80, "N = %s" % queries_label,
              fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
     plt.tick_params(bottom="off")
 
@@ -153,6 +206,8 @@ if __name__ == "__main__":
                         help="the name of the output file")
     parser.add_argument("-q", "--querytype",
                         help="the type of queries (scheduled or interactive)")
+    parser.add_argument("-w", "--weighted", action="store_true",
+                        help="if true, average across users")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -167,4 +222,4 @@ if __name__ == "__main__":
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source, args.querytype, args.output)
+    main(source, args.querytype, args.weighted, args.output)
