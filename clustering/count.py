@@ -15,19 +15,12 @@ SOURCES = {
 def classify_stage(parsetree, features_code, classes):
     feature_functions = get_features(features_code)
     features = featurize_obj(parsetree, feature_functions)
-    if features is None:
-        return "NO_FEATURES"
-    classification = []
-    for (c, check) in classes.iteritems():
-        if check(features):
-            classification.append(c)
-    if len(classification) > 1:
-        return "MULTIPLE"
-    if len(classification) == 0:
+    classification = classify.classify(features, classes)
+    if classification == "MULTIPLE":
+        print classification
         print features
         parsetree.print_tree()
-        return "NONE"
-    return classification[0]
+    return classification
 
 def classify_filter_stage(parsetree):
     return classify_stage(parsetree, "filters01", classify.FILTER_CLASSES)
@@ -36,7 +29,7 @@ def classify_augment_stage(parsetree):
     pass
 
 def classify_aggregate_stage(parsetree):
-    pass
+    return classify_stage(parsetree, "aggregates01", classify.AGGREGATE_CLASSES)
 
 CLASSIFY_STAGE = {
     "Filter": classify_filter_stage,

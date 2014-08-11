@@ -30,56 +30,67 @@ def are_ones(lst, indices):
 def are_zeros(lst, indices):
     return all([float(lst[i]) == 0. for i in indices])
 
-def check(f, zeros, ones, bigs):
-    return are_zeros(f, zeros) and are_ones(f, ones) and are_bigs(f, bigs)
+def are_plur(lst, indices):
+    return all([float(lst[i]) > 0. for i in indices])
+
+def check(f, zeros, ones, bigs, plur):
+    return are_zeros(f, zeros) and are_ones(f, ones) and are_bigs(f, bigs) and are_plur(f, plur)
 
 def is_arithmetic(f):
-    zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    zeros = [3, 110]
+    ones = [6, 114, 121]
+    bigs = [0, 99]
+    plurs = [0, 6, 20, 21, 22, 99, 100, 107, 114, 121]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_string_manipulation(f):
-    zeros = []
+    zeros =  [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 102, 103, 104, 105, 106, 107, 109, 110, 111, 112, 113, 114, 116, 117, 118, 119, 120, 121, 123, 124, 125, 126, 127]
     ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    bigs = [99]
+    plurs = [20, 99]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_multivalue(f):
-    zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    zeros =  [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 48, 49, 50, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 102, 103, 105, 106, 107, 108, 109, 111, 112, 113, 114, 116, 117, 119, 120, 121, 122, 123, 125, 126, 127]
+    ones = [6, 104, 110]
+    bigs = [20, 99]
+    plurs = [0, 6, 20, 21, 22, 99, 104, 110]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_datetime_conversion(f):
     zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    ones = [6]
+    bigs = [99]
+    plurs = [0, 6, 20, 21, 22, 99, 103, 109]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_complicated(f):
     zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    ones = [3]
+    bigs = [0, 21, 22, 99]
+    plurs = [0, 3, 20, 21, 22, 99]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_grouping(f):
-    zeros = []
+    zeros =  [1, 2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127]
     ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    bigs = [20, 99]
+    plurs = [0, 20, 99]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_conditionals(f):
     zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    ones = [6, 24, 113]
+    bigs = [0, 99]
+    plurs = [0, 6, 20, 21, 22, 24, 99, 100, 101, 113]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_field_value_assignments(f):
-    zeros = []
-    ones = []
-    bigs = []
-    return check(f, zeros, ones, bigs)
+    zeros = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127]
+    ones = [6]
+    bigs = [20, 99]
+    plurs = [0, 6, 20, 99]
+    return check(f, zeros, ones, bigs, plurs)
 
 CLASSES = {
     "arithmetic": is_arithmetic,
@@ -153,7 +164,7 @@ def test_classification(features, right_answer):
     success = False
     for (cls, test) in CLASSES.iteritems():
         if test(features) and cls != right_answer:
-            print "GIVEN WRONG CLASS!"
+            print "GIVEN WRONG CLASS!", cls
         if test(features) and cls == right_answer:
             success = True
     if not success:
@@ -176,12 +187,16 @@ def get_ones_indices(vectors):
 def get_bigs_indices(vectors):
     return get_indices(vectors, lambda x: x < 2)
 
+def get_plurs_indices(vectors):
+    return get_indices(vectors, lambda x: x < 1)
+
 def print_stats(ids, cls):
     features = [get_filter_features(id) for id in ids]
     features = [x[1:] for x in features if x is not None]
     print "Zeros: ", get_zeros_indices(features)
     print "Ones: ", get_ones_indices(features)
     print "Bigs: ", get_bigs_indices(features)
+    print "Plurs: ", get_plurs_indices(features)
     for f in features:
         print_features(f)
         test_classification(f, cls)

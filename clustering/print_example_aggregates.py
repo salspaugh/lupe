@@ -30,38 +30,46 @@ def are_ones(lst, indices):
 def are_zeros(lst, indices):
     return all([float(lst[i]) == 0. for i in indices])
 
-def check(f, zeros, ones, bigs):
-    return are_zeros(f, zeros) and are_ones(f, ones) and are_bigs(f, bigs)
+def are_plur(lst, indices):
+    return all([float(lst[i]) > 0. for i in indices])
+
+def check(f, zeros, ones, bigs, plur):
+    return are_zeros(f, zeros) and are_ones(f, ones) and are_bigs(f, bigs) and are_plur(f, plur)
 
 def is_standard(f):
-    zeros = []
-    ones = []
+    zeros = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46]
+    ones = [8]
     bigs = []
-    return check(f, zeros, ones, bigs)
+    plurs = []
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_top(f):
-    zeros = []
-    ones = []
+    zeros = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46]
+    ones = [10, 13, 45]
     bigs = []
-    return check(f, zeros, ones, bigs)
+    plurs = []
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_by_time(f):
-    zeros = []
+    zeros = [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
     ones = []
     bigs = []
-    return check(f, zeros, ones, bigs)
+    plurs = [13]
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_visualize(f):
-    zeros = []
-    ones = []
+    zeros = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45]
+    ones = [3, 46]
     bigs = []
-    return check(f, zeros, ones, bigs)
+    plurs = []
+    return check(f, zeros, ones, bigs, plurs)
 
 def is_visualize_time(f):
-    zeros = []
-    ones = []
+    zeros = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45]
+    ones = [0, 9, 16, 44, 46]
     bigs = []
-    return check(f, zeros, ones, bigs)
+    plurs = []
+    return check(f, zeros, ones, bigs, plurs)
 
 CLASSES = {
     "standard": is_standard,
@@ -119,6 +127,9 @@ def get_indices(vectors, fail_condition):
                 indices.remove(idx)
     return indices
 
+def get_plurs_indices(vectors):
+    return get_indices(vectors, lambda x: x < 1)
+
 def get_zeros_indices(vectors):
     return get_indices(vectors, lambda x: x != 0)
 
@@ -134,6 +145,7 @@ def print_stats(ids, cls):
     print "Zeros: ", get_zeros_indices(features)
     print "Ones: ", get_ones_indices(features)
     print "Bigs: ", get_bigs_indices(features)
+    print "Plurs: ", get_plurs_indices(features)
     for f in features:
         print_features(f)
         test_classification(f, cls)

@@ -263,22 +263,22 @@ class FiltersByPositionFeature(Feature):
 
 
 FEATURES = [
-    NumberOfArgumentsFeature(),
-    NumberOfWildcardMatchesFeature(),
-    NumberOfConditionalsFeature(),
-    NumberOfSpecificConditionalsFeature("AND"),
-    NumberOfSpecificConditionalsFeature("OR"),
-    NumberOfSpecificConditionalsFeature("NOT"),
-    NumberOfFieldSearchesFeature(),
-    NumberOfOptionSearchesFeature(),
-    NumberOfStringSearchesFeature(),
-    AverageLengthOfStringSearchesFeature(),
-    NumberOfLogicalOperatorsFeature(),
-    NumberOfLogicalOperatorsFeature(),
-    NumberOfTimeSearchesFeature(),
-    NumberOfSubsearchesFeature(),
-    NumberOfInternalDataSearchesFeature(),
-    NumberOfDefaultFieldSearchesFeature(),
+    NumberOfArgumentsFeature(),                 # 0
+    NumberOfWildcardMatchesFeature(),           # 1
+    NumberOfConditionalsFeature(),              # 2
+    NumberOfSpecificConditionalsFeature("AND"), # 3
+    NumberOfSpecificConditionalsFeature("OR"),  # 4
+    NumberOfSpecificConditionalsFeature("NOT"), # 5
+    NumberOfFieldSearchesFeature(),             # 6
+    NumberOfOptionSearchesFeature(),            # 7
+    NumberOfStringSearchesFeature(),            # 8
+    AverageLengthOfStringSearchesFeature(),     # 9
+    NumberOfLogicalOperatorsFeature(),          # 10    
+    NumberOfLogicalOperatorsFeature(),          # 11
+    NumberOfTimeSearchesFeature(),              # 12
+    NumberOfSubsearchesFeature(),               # 13
+    NumberOfInternalDataSearchesFeature(),      # 14
+    NumberOfDefaultFieldSearchesFeature(),      # 15
     NumberOfDistinctFieldsFeature(),
     SpecifiedCommandUsedFeature("dedup"),
     SpecifiedCommandUsedFeature("head"),
