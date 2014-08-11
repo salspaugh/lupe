@@ -13,8 +13,10 @@ SOURCES = {
 }
 
 def classify_stage(parsetree, features_code, classes):
-    filter_features = get_features(features_code)
-    features = featurize_obj(parsetree, filter_features)
+    feature_functions = get_features(features_code)
+    features = featurize_obj(parsetree, feature_functions)
+    if features is None:
+        return "NO_FEATURES"
     classification = []
     for (c, check) in classes.iteritems():
         if check(features):
@@ -22,6 +24,8 @@ def classify_stage(parsetree, features_code, classes):
     if len(classification) > 1:
         return "MULTIPLE"
     if len(classification) == 0:
+        print features
+        parsetree.print_tree()
         return "NONE"
     return classification[0]
 
@@ -64,11 +68,18 @@ def count_chosen_transform_classes_unweighted(source, query_type, chosen_transfo
     chosen_transform_counts = defaultdict(int)
     for query in fetch_queries(source, query_type):
         count_query_chosen_transform_classes(query, chosen_transform, chosen_transform_counts)
-    print chosen_transform_counts
+    print_chosen_transform_counts(chosen_transform_counts)
+ 
+def print_chosen_transform_counts(cnts):
+    total = float(sum(cnts.values()))
+    cnts = sorted(cnts.iteritems(), key=lambda x: x[1], reverse=True)
+    for (label, cnt) in cnts:
+        pct = cnt/total*100*2 # Because we count the total of transforms too
+        print "%20s %6d %.2f" % (label, cnt, pct)
 
 def count_query_chosen_transform_classes(query, chosen_transform, counts):
     stages = split_query_into_stages(query)
-    for stage in stages:
+    for pos, stage in enumerate(stages):
         transforms = lookup_categories(stage)
         if len(transforms) == 0:
             print query
@@ -78,6 +89,7 @@ def count_query_chosen_transform_classes(query, chosen_transform, counts):
             counts[chosen_transform] += 1
             p = parse_query(stage)
             if p is not None:
+                p.position = pos
                 counts[CLASSIFY_STAGE[chosen_transform](p)] += 1
             else:
                 counts["UNPARSED"] += 1

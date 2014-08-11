@@ -15,9 +15,15 @@ def featurize_obj(obj, features):
         try: 
             f = feature.check(obj)
             if type(f) == type([]):
-                featvec += [float(x) for x in f]
+                try:
+                    featvec += [float(x) for x in f]
+                except: 
+                    raise RuntimeError("Error computing feature: " + str(feature)) 
             else:
-                featvec.append(float(f))
+                try:
+                    featvec.append(float(f))
+                except:
+                    raise RuntimeError("Error computing feature: " + str(feature)) 
         except Exception as error:
             print_exc()
             return None

@@ -46,7 +46,7 @@ class Feature(object):
 
     def is_field_search(self, node):
         return node.role == "FUNCTION" and \
-                node.raw == "eq" and \
+                node.raw in ["eq", "gt", "lt", "le", "ge", "ne"] and \
                 self.is_field(node.children[0]) and \
                 node.children[1].role == "VALUE"
     
