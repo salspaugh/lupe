@@ -279,15 +279,15 @@ FEATURES = [
     NumberOfSubsearchesFeature(),               # 13
     NumberOfInternalDataSearchesFeature(),      # 14
     NumberOfDefaultFieldSearchesFeature(),      # 15
-    NumberOfDistinctFieldsFeature(),
-    SpecifiedCommandUsedFeature("dedup"),
-    SpecifiedCommandUsedFeature("head"),
-    SpecifiedCommandUsedFeature("regex"),
-    SpecifiedCommandUsedFeature("search"),
-    SpecifiedCommandUsedFeature("tail"),
-    SpecifiedCommandUsedFeature("where"),
-    SpecifiedCommandUsedFeature("uniq"),
-    PositionInQueryFeature(),
-    RemovesDuplicatesFeature(),
-    FiltersByPositionFeature()
+    NumberOfDistinctFieldsFeature(),            # 16
+    SpecifiedCommandUsedFeature("dedup"),       # 17
+    SpecifiedCommandUsedFeature("head"),        # 18
+    SpecifiedCommandUsedFeature("regex"),       # 19
+    SpecifiedCommandUsedFeature("search"),      # 20
+    SpecifiedCommandUsedFeature("tail"),        # 21
+    SpecifiedCommandUsedFeature("where"),       # 22
+    SpecifiedCommandUsedFeature("uniq"),        # 23
+    PositionInQueryFeature(),                   # 24
+    RemovesDuplicatesFeature(),                 # 25
+    FiltersByPositionFeature()                  # 26
 ]

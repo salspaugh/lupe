@@ -12,24 +12,25 @@ SOURCES = {
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-def classify_stage(parsetree, features_code, classes):
+def classify_stage(parsetree, features_code, classifier):
     feature_functions = get_features(features_code)
     features = featurize_obj(parsetree, feature_functions)
-    classification = classify.classify(features, classes)
-    if classification == "MULTIPLE":
-        print classification
-        print features
-        parsetree.print_tree()
-    return classification
+    if features is not None:
+        feautures = features[1:] # first one is ID
+    classification = classify.classify(features, classifier)
+    print features
+    print classification
+    parsetree.print_tree()
+    return int(classification)
 
-def classify_filter_stage(parsetree):
-    return classify_stage(parsetree, "filters01", classify.FILTER_CLASSES)
+def classify_filter_stage(parsetree, clf):
+    return classify_stage(parsetree, "filters01", clf)
 
-def classify_augment_stage(parsetree):
-    pass
+def classify_augment_stage(parsetree, clf):
+    return classify_stage(parsetree, "augments01", clf)
 
-def classify_aggregate_stage(parsetree):
-    return classify_stage(parsetree, "aggregates01", classify.AGGREGATE_CLASSES)
+def classify_aggregate_stage(parsetree, clf):
+    return classify_stage(parsetree, "aggregates01", clf)
 
 CLASSIFY_STAGE = {
     "Filter": classify_filter_stage,
@@ -41,26 +42,27 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
-def main(source, query_type, user_weighted, chosen_transform, output):
-    count_chosen_transform_classes(source, query_type, user_weighted, chosen_transform, output)
+def main(source, query_type, user_weighted, chosen_transform, examples, output):
+    count_classes(source, query_type, user_weighted, chosen_transform, examples, output)
 
-def count_chosen_transform_classes(source, query_type, user_weighted, chosen_transform, output):
+def count_classes(source, query_type, user_weighted, chosen_transform, examples, output):
+    clf = fit_classifier(examples)
     if user_weighted:
-        count_chosen_transform_classes_weighted(source, query_type, chosen_transform, output)
+        count_classes_weighted(source, query_type, chosen_transform, clf, output)
     else:
-        count_chosen_transform_classes_unweighted(source, query_type, chosen_transform, output)
+        count_classes_unweighted(source, query_type, chosen_transform, clf, output)
 
-def count_chosen_transform_classes_weighted(source, query_type, chosen_transform, output):
+def count_classes_weighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = {}
     for (user, query) in fetch_queries_by_user(source, query_type):
         if not user in chosen_transform_counts:
             chosen_transform_counts[user] = defaultdict(int)
-        count_query_chosen_transform_classes(query, chosen_transform, chosen_transform_counts[user])
+        count_classes_query(query, chosen_transform, chosen_transform_counts[user], clf)
 
-def count_chosen_transform_classes_unweighted(source, query_type, chosen_transform, output):
+def count_classes_unweighted(source, query_type, chosen_transform, output):
     chosen_transform_counts = defaultdict(int)
     for query in fetch_queries(source, query_type):
-        count_query_chosen_transform_classes(query, chosen_transform, chosen_transform_counts)
+        count_classes_query(query, chosen_transform, chosen_transform_counts, clf)
     print_chosen_transform_counts(chosen_transform_counts)
  
 def print_chosen_transform_counts(cnts):
@@ -70,7 +72,7 @@ def print_chosen_transform_counts(cnts):
         pct = cnt/total*100*2 # Because we count the total of transforms too
         print "%20s %6d %.2f" % (label, cnt, pct)
 
-def count_query_chosen_transform_classes(query, chosen_transform, counts):
+def count_classes_query(query, chosen_transform, counts, clf):
     stages = split_query_into_stages(query)
     for pos, stage in enumerate(stages):
         transforms = lookup_categories(stage)
@@ -83,7 +85,7 @@ def count_query_chosen_transform_classes(query, chosen_transform, counts):
             p = parse_query(stage)
             if p is not None:
                 p.position = pos
-                counts[CLASSIFY_STAGE[chosen_transform](p)] += 1
+                counts[CLASSIFY_STAGE[chosen_transform](p, clf)] += 1
             else:
                 counts["UNPARSED"] += 1
 
@@ -188,6 +190,8 @@ if __name__ == "__main__":
                         help="if true, average across users")
     parser.add_argument("-t", "--transform",
                         help="the transform to count")
+    parser.add_argument("-e", "--examples",
+                        help="the training data file to train the classifier (.csv)")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -199,8 +203,10 @@ if __name__ == "__main__":
         args.output = "categories_histogram"
     if args.querytype is None:
         raise RuntimeError("You must specify a query type.")
+    if args.examples is None:
+        raise RuntimeError("You must provide training data.")
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source, args.querytype, args.weighted, args.transform, args.output)
+    main(source, args.querytype, args.weighted, args.transform, args.examples, args.output)
 
