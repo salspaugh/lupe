@@ -2,6 +2,7 @@ from queryutils.databases import PostgresDB, SQLite3DB
 from queryutils.parse import tokenize_query, split_query_into_stages, parse_query
 from queryutils.splunktypes import lookup_categories
 from featurize import get_features, featurize_obj
+import json
 import csv
 from collections import defaultdict
 
@@ -60,72 +61,125 @@ SORTING_CODES = {
 }
 
 
-def main(source, query_type, transform, output, verify):
+def main(source, query_type, transform, output, append, verify):
     if verify:
-        verify()
+        verify(transform, output)
     else:
-        sort(source, query_type, transform, output)
+        sort(source, query_type, transform, output, append)
 
-def verify():
-    pass
+def verify(transform, output):
+    status_filename = "%s-verification-results.json" % output
+    results = {
+        "failed": {},
+        "succeeded": {},
+        }
+    verified_filename = "%s-verified-examples.csv" % output
+    with open(status_filename, "w") as status, open(verified_filename, "w") as verified:
+        status_writer = csv.writer(status)
+        example_writer = csv.writer(verified)
+        records = read_verification_records(output)
+        has_header = False
+        for (identifier, record) in records.iteritems():
+            parsetree = record["parsetree"]
+            old_code = record["code"]
+            new_code = present_for_sorting(parsetree, SORTING_CODES[transform])
+            if old_code == new_code:
+                features = lookup_features(parsetree, FEATURE_CODES[transform])
+                features = [float(f) for f in features[1:]]
+                if not has_header:
+                    write_header(features, example_writer)
+                    has_header = True
+                example_writer.writerow([code] + features)
+                results["succeeded"][identifier] = record
+            else:
+                record["diff"] = new_code
+                results["failed"][identifier] = record
+        print "Verified: %d results, %d failed" % (len(results), len(results["failed"]))
+        json.dump(results, status)
 
-def sort(source, query_type, transform, output):
-    seen = set()
-    verification = []
-    counts = defaultdict(int)
-    total = 0
+def sort(source, query_type, transform, output, append):
+    records = {}
+    records["coverage"] = set()
+    examples_per_category = defaultdict(int)
+    if append:
+        records = read_verification_records(output)
+        examples_per_category = tally_examples_per_category(records)
+    print records.keys()
     examples_filename = "%s-sorted-examples.csv" % output
-    with open(examples_filename, "w") as examples:
+    write_bit = "a" if append else "w"
+    with open(examples_filename, write_bit) as examples:
         writer = csv.writer(examples)
         has_header = False
         for query in fetch_queries(source, query_type):
             for parsetree in parsed_stages(query, transform):
-                identifier = "%d.%d" % (total, parsetree.position)
-                if identifier in seen:
-                    continue
-                seen.add(identifier)
-                code = process_parsetree(parsetree, transform, writer):
+                identifier = "%d.%d" % (len(records), parsetree.position)
+                if identifier in records: continue
+                features = lookup_features(parsetree, FEATURE_CODES[transform])
+                if features is None: continue
+                features = [float(f) for f in features[1:]]
+                if tuple(features) in records["coverage"]: continue
+                records["coverage"].add(tuple(features))
+                if not has_header:
+                    write_header(features, writer)
+                    has_header = True
+                code = present_for_sorting(identifier, parsetree, SORTING_CODES[transform])
                 if code == "EXIT":
-                    write_verification(verification, output)
+                    finish_sorting(records, output)
                     return
-                record = {
-                    "parsetree": parsetree._str_tree(),
-                    "identifier": identifier,
-                    "code": code
-                }
-                verification.append(record)
+                if valid_code(code, SORTING_CODES[transform]):
+                    examples_per_category[code] += 1
+                    writer.writerow([code] + features)
+                    print "\tWrote a row!"
+                insert_record(identifier, parsetree, code, records)
+                if wrote_enough_examples(examples_per_category, records):
+                    finish_sorting(records, output)
+                    return
+    finish_sorting(records, output)
 
-def write_verification(data_to_verify, output):
+def insert_record(identifier, parsetree, code, records):
+    record = {
+        "parsetree": parsetree._str_tree(),
+        "identifier": identifier,
+        "code": code
+    }
+    records[identifier] = record
+
+def wrote_enough_examples(counts, records):
+    return all([v > 10 for v in counts.values()]) or len(records) > 300
+
+def finish_sorting(records, output):
+    print "\tEXITING NOW!"
+    write_verification_records(records, output)
+
+def valid_code(code, valid_codes):
+    return code in valid_codes.values() and code != valid_codes["unknown"]
+
+def write_header(x, writer):
+    header = ["X%d"]*len(x) 
+    header = [s % i for i, s in enumerate(header)]
+    header = ["Y"] + header
+    writer.writerow(header)
+
+def read_verification_records(output):
     records_filename = "%s-verification.json" % output
     with open(records_filename) as record:
+        return json.load(record)
+
+def write_verification_records(data_to_verify, output):
+    c = data_to_verify["coverage"]
+    data_to_verify["coverage"] = list(c)
+    records_filename = "%s-verification.json" % output
+    with open(records_filename, "w") as record:
         json.dump(data_to_verify, record)
 
-def process_parsetree(parsetree, transform, writer)
-    features = lookup_features(parsetree, FEATURE_CODES[transform])
-    if features is not None:
-        x = [float(f) for f in features[1:]]
-        if not has_header:
-            header = ["X%d"]*len(x) 
-            header = [s % i for i, s in enumerate(header)]
-            header = ["Y"] + header
-            writer.writerow(header)
-            has_header = True
-        code = present_for_sorting(parsetree, SORTING_CODES[transform])
-        if code == "EXIT":
-            print "\tEXITING NOW!"
-            return "EXIT"
-        if code in SORTING_CODES[transform].values() and code != SORTING_CODES[transform]["unknown"]:
-            counts[code] += 1
-            total += 1
-            y = [code]
-            writer.writerow(y + x)
-            print "\tWrote a row!"
-            if all([v > 10 for v in counts.values()]) or total > 300:
-                print "ALL DONE!"
-                return "EXIT"
+def tally_examples_per_category(records):
+    counts = defaultdict(int)
+    for (identifier, record) in records.iteritems():
+        counts[record["code"]] += 1
+    return counts
 
-def present_for_sorting(parsetree, sorting_codes):
-    msg = make_message(parsetree, sorting_codes)
+def present_for_sorting(identifier, parsetree, sorting_codes):
+    msg = make_message(identifier, parsetree, sorting_codes)
     reverse_codes = { v:k for (k,v) in sorting_codes.iteritems() }
     while True:
         input = raw_input(msg)
@@ -144,9 +198,9 @@ def present_for_sorting(parsetree, sorting_codes):
             print "Sorry. Unrecognized code. Try again."
     return input
 
-def make_message(parsetree, sorting_codes):
+def make_message(identifier, parsetree, sorting_codes):
     msg = "\n\n-------------------------------------------------------------\n"
-    msg += "Classify:\n %s\nOptions are:\n" % parsetree._str_tree() 
+    msg += "Classify item %s: \n %s\nOptions are:\n" % (identifier, parsetree._str_tree())
     codes = sorted(sorting_codes.iteritems(), key=lambda x: x[1])
     for (name, code) in codes:
         msg = "%s\n\t\t%d (%s)" % (msg, code, name)
@@ -215,6 +269,10 @@ if __name__ == "__main__":
                         help="the type of queries (scheduled or interactive)")
     parser.add_argument("-t", "--transform",
                         help="the transform to count")
+    parser.add_argument("-n", "--append", action="store_true",
+                        help="whether or not to append to the data named by output")
+    parser.add_argument("-y", "--verify", action="store_true",
+                        help="whether or not to verify the data named by output")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -229,4 +287,4 @@ if __name__ == "__main__":
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source, args.querytype, args.transform, args.output)
+    main(source, args.querytype, args.transform, args.output, args.append, args.verify)

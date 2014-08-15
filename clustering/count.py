@@ -18,9 +18,6 @@ def classify_stage(parsetree, features_code, classifier):
     if features is not None:
         feautures = features[1:] # first one is ID
     classification = classify.classify(features, classifier)
-    print features
-    print classification
-    parsetree.print_tree()
     return int(classification)
 
 def classify_filter_stage(parsetree, clf):
@@ -46,7 +43,7 @@ def main(source, query_type, user_weighted, chosen_transform, examples, output):
     count_classes(source, query_type, user_weighted, chosen_transform, examples, output)
 
 def count_classes(source, query_type, user_weighted, chosen_transform, examples, output):
-    clf = fit_classifier(examples)
+    clf = classify.fit_classifier(examples)
     if user_weighted:
         count_classes_weighted(source, query_type, chosen_transform, clf, output)
     else:
@@ -59,7 +56,7 @@ def count_classes_weighted(source, query_type, chosen_transform, clf, output):
             chosen_transform_counts[user] = defaultdict(int)
         count_classes_query(query, chosen_transform, chosen_transform_counts[user], clf)
 
-def count_classes_unweighted(source, query_type, chosen_transform, output):
+def count_classes_unweighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = defaultdict(int)
     for query in fetch_queries(source, query_type):
         count_classes_query(query, chosen_transform, chosen_transform_counts, clf)
@@ -85,7 +82,8 @@ def count_classes_query(query, chosen_transform, counts, clf):
             p = parse_query(stage)
             if p is not None:
                 p.position = pos
-                counts[CLASSIFY_STAGE[chosen_transform](p, clf)] += 1
+                code = CLASSIFY_STAGE[chosen_transform](p, clf)
+                counts[code] += 1
             else:
                 counts["UNPARSED"] += 1
 
