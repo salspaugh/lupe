@@ -4,6 +4,7 @@ from queryutils.splunktypes import lookup_categories
 from featurize import get_features, featurize_obj
 import json
 import csv
+import random
 from collections import defaultdict
 
 SOURCES = {
@@ -110,9 +111,9 @@ def sort(source, query_type, transform, output, append):
     with open(examples_filename, write_bit) as examples:
         writer = csv.writer(examples)
         has_header = False
-        for query in fetch_queries(source, query_type):
+        for (qid, query) in fetch_queries(source, query_type):
             for parsetree in parsed_stages(query, transform):
-                identifier = "%d.%d" % (len(records), parsetree.position)
+                identifier = "%d.%d" % (qid, parsetree.position)
                 if identifier in records: continue
                 features = lookup_features(parsetree, FEATURE_CODES[transform])
                 if features is None: continue
@@ -163,7 +164,12 @@ def write_header(x, writer):
 def read_verification_records(output):
     records_filename = "%s-verification.json" % output
     with open(records_filename) as record:
-        return json.load(record)
+        records = json.load(record)
+        s = set()
+        for r in records["coverage"]:
+            s.add(tuple(r))
+        records["coverage"] = s
+        return records
 
 def write_verification_records(data_to_verify, output):
     c = data_to_verify["coverage"]
@@ -175,6 +181,7 @@ def write_verification_records(data_to_verify, output):
 def tally_examples_per_category(records):
     counts = defaultdict(int)
     for (identifier, record) in records.iteritems():
+        if identifier == "coverage": continue
         counts[record["code"]] += 1
     return counts
 
@@ -210,18 +217,22 @@ def make_message(identifier, parsetree, sorting_codes):
 def fetch_queries(source, query_type):
     source.connect()
     if query_type == QueryType.INTERACTIVE:
-        sql = "SELECT text FROM queries, users \
+        sql = "SELECT text, queries.id AS qid FROM queries, users \
                 WHERE queries.user_id=users.id AND \
                     is_interactive=true AND \
                     is_suspicious=false AND \
                     user_type is null"
     elif query_type == QueryType.SCHEDULED:
-        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
+        sql = "SELECT min(id) AS qid, text FROM queries \
+                WHERE is_interactive=false \
+                GROUP BY text"
     else:
         raise RuntimeError("Invalid query type.")
     cursor = source.execute(sql)
-    for row in cursor.fetchall():
-        yield row["text"]
+    queries = [(row["qid"], row["text"]) for row in cursor.fetchall()]
+    random.shuffle(queries)
+    for query in queries:
+        yield query
     source.close()
 
 def parsed_stages(query, chosen_transform):

@@ -39,37 +39,47 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
-def main(source, query_type, user_weighted, chosen_transform, examples, output):
-    count_classes(source, query_type, user_weighted, chosen_transform, examples, output)
+def main(source, query_type, user_weighted, chosen_transform, examples, output, classify=False):
+    if classify:
+        classify_and_count(source, query_type, user_weighted, chosen_transform, examples, output)
+    else:
+        count_examples(examples, output)
 
-def count_classes(source, query_type, user_weighted, chosen_transform, examples, output):
+def count_examples(examples, output):
+    X, Y = classify.read_training_data(examples)
+    counts = defaultdict(int)
+    for y in Y:
+        counts[y] += 1
+    print_counts(counts)
+
+def classify_and_count(source, query_type, user_weighted, chosen_transform, examples, output):
     clf = classify.fit_classifier(examples)
     if user_weighted:
-        count_classes_weighted(source, query_type, chosen_transform, clf, output)
+        classify_and_count_weighted(source, query_type, chosen_transform, clf, output)
     else:
-        count_classes_unweighted(source, query_type, chosen_transform, clf, output)
+        classify_and_count_unweighted(source, query_type, chosen_transform, clf, output)
 
-def count_classes_weighted(source, query_type, chosen_transform, clf, output):
+def classify_and_count_weighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = {}
     for (user, query) in fetch_queries_by_user(source, query_type):
         if not user in chosen_transform_counts:
             chosen_transform_counts[user] = defaultdict(int)
-        count_classes_query(query, chosen_transform, chosen_transform_counts[user], clf)
+        classify_and_count_query(query, chosen_transform, chosen_transform_counts[user], clf)
 
-def count_classes_unweighted(source, query_type, chosen_transform, clf, output):
+def classify_and_count_unweighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = defaultdict(int)
     for query in fetch_queries(source, query_type):
-        count_classes_query(query, chosen_transform, chosen_transform_counts, clf)
-    print_chosen_transform_counts(chosen_transform_counts)
+        classify_and_count_query(query, chosen_transform, chosen_transform_counts, clf)
+    print_counts(chosen_transform_counts)
  
-def print_chosen_transform_counts(cnts):
+def print_counts(cnts):
     total = float(sum(cnts.values()))
     cnts = sorted(cnts.iteritems(), key=lambda x: x[1], reverse=True)
     for (label, cnt) in cnts:
         pct = cnt/total*100*2 # Because we count the total of transforms too
         print "%20s %6d %.2f" % (label, cnt, pct)
 
-def count_classes_query(query, chosen_transform, counts, clf):
+def classify_and_count_query(query, chosen_transform, counts, clf):
     stages = split_query_into_stages(query)
     for pos, stage in enumerate(stages):
         transforms = lookup_categories(stage)
@@ -190,6 +200,8 @@ if __name__ == "__main__":
                         help="the transform to count")
     parser.add_argument("-e", "--examples",
                         help="the training data file to train the classifier (.csv)")
+    parser.add_argument("-c", "--classify", action="store_true",
+                        help="whether or not to classify the entire data set or simply count examples")
     args = parser.parse_args()
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -206,5 +218,5 @@ if __name__ == "__main__":
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    main(source, args.querytype, args.weighted, args.transform, args.examples, args.output)
+    main(source, args.querytype, args.weighted, args.transform, args.examples, args.output, args.classify)
 
