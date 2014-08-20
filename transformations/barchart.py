@@ -160,7 +160,8 @@ def plot_barchart(stage_percents, stages_label, query_percents, queries_label, o
     index = numpy.arange(len(stage_percents))
 
     plt.subplot(2, 1, 1)
-    plt.bar(index, spcts, 1, color="r")
+    rects = plt.bar(index, spcts, 1, color="r")
+    autolabel(rects, spcts)
     plt.ylabel("% stages", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
     plt.xticks(index + 0.5, ["" for n in names])
@@ -169,7 +170,8 @@ def plot_barchart(stage_percents, stages_label, query_percents, queries_label, o
     plt.tick_params(bottom="off")
     
     plt.subplot(2, 1, 2)
-    plt.bar(index, qpcts, 1, color="c")
+    rects = plt.bar(index, qpcts, 1, color="c")
+    autolabel(rects, qpcts)
     plt.ylabel("% queries", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
     plt.xticks(index + 0.5, names, rotation=-45, fontsize=16,
@@ -182,6 +184,14 @@ def plot_barchart(stage_percents, stages_label, query_percents, queries_label, o
     plt.autoscale(enable=True, axis="x", tight=None)
     plt.tight_layout()
     plt.savefig(output + ".pdf", dpi=400)
+
+def autolabel(rects, counts):
+    for ii, rect in enumerate(rects):
+        height = rect.get_height()
+        plt.text(
+            rect.get_x() + rect.get_width() / 2., height +
+            1000, "%.2f" % (counts[ii]),
+            ha="center", va="bottom", fontsize=20)
 
 def lookup(dictionary, lookup_keys):
     return [dictionary[k] for k in lookup_keys]

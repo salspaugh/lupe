@@ -35,6 +35,43 @@ CLASSIFY_STAGE = {
     "Aggregate": classify_aggregate_stage
 }
 
+FILTER_LABELS = {
+    6: "Filters by regex",
+    3: "Filters by index",
+    2: "Filters by result of function",
+    1: "Filters by specifying fields",
+    10: "Filters by time range",
+    8: "Filters by string contains",
+    5: "Uses macro",
+    0: "Deduplicates",
+    4: "Filters by long logical condition",
+    7: "Selects",
+    9: "Uses subsearch",
+}
+AUGMENT_LABELS = {
+    4: "Assigns simple value",
+    3: "Date or time calculation",
+    1: "Uses subsearch",
+    7: "String manipulation",
+    6: "Multi-value operation",
+    2: "Conditional statement",
+    0: "Arithmetic",
+    5: "Assigns to group"
+}
+AGGREGATE_LABELS = {
+    4: "Visualize aggregation over time",
+    0: "Group by time",
+    3: "Visualize aggregation",
+    2: "Aggregate, sort, limit",
+    1: "Aggregation"
+}
+
+TRANSFORM_LABELS = {
+    "Filter": FILTER_LABELS,
+    "Augment": AUGMENT_LABELS,
+    "Aggregate": AGGREGATE_LABELS
+}
+
 class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
@@ -43,14 +80,19 @@ def main(source, query_type, user_weighted, chosen_transform, examples, output, 
     if classify:
         classify_and_count(source, query_type, user_weighted, chosen_transform, examples, output)
     else:
-        count_examples(examples, output)
+        count_examples(examples, output, chosen_transform)
 
-def count_examples(examples, output):
+def count_examples(examples, output, transform):
     X, Y = classify.read_training_data(examples)
     counts = defaultdict(int)
     for y in Y:
+        y = lookup_label(transform, y)
         counts[y] += 1
     print_counts(counts)
+    plot_barchart(counts, output, transform)
+
+def lookup_label(transform, code):
+    return TRANSFORM_LABELS[transform][code]
 
 def classify_and_count(source, query_type, user_weighted, chosen_transform, examples, output):
     clf = classify.fit_classifier(examples)
@@ -70,14 +112,16 @@ def classify_and_count_unweighted(source, query_type, chosen_transform, clf, out
     chosen_transform_counts = defaultdict(int)
     for query in fetch_queries(source, query_type):
         classify_and_count_query(query, chosen_transform, chosen_transform_counts, clf)
-    print_counts(chosen_transform_counts)
+    print_counts(chosen_transform_counts, totalincl=True)
  
-def print_counts(cnts):
+def print_counts(cnts, totalincl=False):
     total = float(sum(cnts.values()))
     cnts = sorted(cnts.iteritems(), key=lambda x: x[1], reverse=True)
     for (label, cnt) in cnts:
-        pct = cnt/total*100*2 # Because we count the total of transforms too
-        print "%20s %6d %.2f" % (label, cnt, pct)
+        pct = cnt/total*100
+        if totalincl:
+            pct *= 2 # Because we count the total of transforms too
+        print "%50s %6d %.2f" % (label, cnt, pct)
 
 def classify_and_count_query(query, chosen_transform, counts, clf):
     stages = split_query_into_stages(query)
@@ -136,35 +180,21 @@ def fetch_queries(source, query_type):
         yield row["text"]
     source.close()
 
-def plot_barchart(stage_percents, stages_label, query_percents, queries_label, output):
+def plot_barchart(counts, output, transform):
+    
+    total = float(sum(counts.values()))
+    counts = sorted(counts.iteritems(), key=lambda x: x[1], reverse=True)
+    index = numpy.arange(len(counts))
+    names = [k for (k,v) in counts]
+    pcts = [v/total*100. for (k,v) in counts]
    
-    spcts = sorted(stage_percents.iteritems(), key=lambda x: x[1], reverse=True)
-    names = [k for (k,v) in spcts]
-    qpcts = [query_percents[k]*100 for (k,v) in spcts]
-    spcts = [v*100 for (k,v) in spcts]
-    for (n, s, q) in zip(names, spcts, qpcts):
-        print "%s, %.1f, %.1f" % (n, s, q)
-    
-    index = numpy.arange(len(stage_percents))
-
-    plt.subplot(2, 1, 1)
-    plt.bar(index, spcts, 1, color="r")
-    plt.ylabel("% stages", fontsize=18)
-    plt.yticks(range(0, 100, 10), fontsize=12)
-    plt.xticks(index + 0.5, ["" for n in names])
-    plt.text(10.5, 72, "N = %s" % stages_label,
-        fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
-    plt.tick_params(bottom="off")
-    
-    plt.subplot(2, 1, 2)
-    plt.bar(index, qpcts, 1, color="c")
-    plt.ylabel("% queries", fontsize=18)
+    plt.subplot()
+    plt.bar(index, pcts, 1, color="c")
+    plt.ylabel("% transformations", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
     plt.xticks(index + 0.5, names, rotation=-45, fontsize=16,
        rotation_mode="anchor", ha="left")
-    #plt.xlabel("Transformation Type", fontsize=20)
-    plt.text(10, 80, "N = %s" % queries_label,
-             fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
+    plt.xlabel("Types of %s Transformations" % transform, fontsize=20)
     plt.tick_params(bottom="off")
 
     plt.autoscale(enable=True, axis="x", tight=None)

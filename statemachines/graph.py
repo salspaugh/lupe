@@ -12,7 +12,25 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
-def compute_graph(type, querytype, source, output): 
+def compute_graph_unweighted(type, querytype, source, output):
+    graph = {}
+    ntotal = nincluded = 0.
+    if type != "user":
+        st = re.compile(".*\s*(typetype)\s*(=)\s*['\"]?("+type+").*['\"]?")
+        s = re.compile(".*\s*(type)\s*(=)\s*['\"]?("+type+").*['\"]?")
+    for query in fetch_queries(source, querytype):
+        ntotal += 1
+        if type != "user" and st.match(query) or s.match(query):
+            nincluded += 1
+            graph = tally_completions(query, graph)
+    edges = {}
+    for (source, sinks) in graph.iteritems():
+        total_outgoing = float(sum(sinks.values()))
+        for (sink, cnt) in sinks.iteritems():
+            edges[(source, sink)] = cnt/total_outgoing
+    output_graph_data(edges, output + "-edges", nincluded, ntotal)
+
+def compute_graph_weighted(type, querytype, source, output): 
     graph = {}
     distinct = set()
     ntotal = nincluded = nusers = 0.
@@ -52,6 +70,23 @@ def compute_graph(type, querytype, source, output):
     print "NUMBER DISTINCT QUERIES: %d" % len(distinct)
     output_graph_data(graph, output + "-edges", nincluded, ntotal)
     distinct_queries.close()
+
+def fetch_queries(source, query_type):
+    source.connect()
+    if query_type == QueryType.INTERACTIVE:
+        sql = "SELECT text FROM queries, users \
+                WHERE queries.user_id=users.id AND \
+                    is_interactive=true AND \
+                    is_suspicious=false AND \
+                    user_type is null"
+    elif query_type == QueryType.SCHEDULED:
+        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
+    else:
+        raise RuntimeError("Invalid query type.")
+    cursor = source.execute(sql)
+    for row in cursor.fetchall():
+        yield row["text"]
+    source.close()
 
 def filter_queries_of_source(source, queries): # TODO: Test this.
     filtered = []
@@ -94,7 +129,7 @@ def lookup_edge(node1, node2, table):
 def output_graph_data(graph, output, proportion, total):
     data = {}
     if proportion < 500:
-        data["title"] = "%d queries" % int(proportion)
+        data["title"] = "%d distinct queries" % int(proportion)
     else:
         fraction = proportion / total
         data["title"] = "{0:.2f}% of queries".format(float(fraction) * 100)
@@ -141,8 +176,9 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
 
     graph_data = read_graph_data(datafilename)
 
-    title = graph_data["title"]
-    title = State(title)
+    #title = graph_data["title"]
+    #title = State(title)
+    title = ""
     
     edges = graph_data["edges"] 
     # Add edges that are heavier than the threshold.
@@ -175,7 +211,8 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
         missing.append(states[state].name)
 
     filename = "%s-%s.pdf" % (label, str(threshold))
-    get_graph(fsm, title=title, missing=missing).draw(filename, prog='dot')
+    #get_graph(fsm, title=title, missing=missing).draw(filename, prog='dot')
+    get_graph(fsm, title=False, missing=missing).draw(filename, prog='dot')
 
 def read_graph_data(filename):
     with open(filename) as f:

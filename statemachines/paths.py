@@ -2,7 +2,7 @@ from json import dump
 from graph import read_graph_data
 
 MAX_PIPES = 5  # max number of pipes on path
-THRESHOLD = .001
+THRESHOLD = .00001
 
 def compute_top_paths(edges, output):
     graph = {}
@@ -23,7 +23,6 @@ def get_paths(graph):
     generate_possible_paths(graph, prev, paths, path, 1, 0)
     return paths
 
-
 def generate_possible_paths(graph, prev, paths, path, freq, count):
     if freq < THRESHOLD:
         return
@@ -37,5 +36,5 @@ def generate_possible_paths(graph, prev, paths, path, freq, count):
 def write_top_paths(paths, output):
     output = "%s-paths" % output
     with open(output, 'w') as f:
-        paths = sorted(paths, key=paths.get, reverse=True)
+        paths = sorted(paths.iteritems(), key=lambda x: x[1], reverse=True)
         dump(paths, f, indent=4, separators=(',', ': '))

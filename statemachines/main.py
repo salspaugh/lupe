@@ -1,6 +1,6 @@
 from queryutils.databases import PostgresDB, SQLite3DB
 from queryutils.files import CSVFiles, JSONFiles
-from graph import compute_graph, create_fsm
+from graph import compute_graph_unweighted, create_fsm
 from paths import compute_top_paths
 from os import path
 
@@ -20,7 +20,7 @@ SOURCES = {
 def main(type, source, querytype, output, threshold):
     edges = output + "-edges"
     if not path.isfile(edges):
-        compute_graph(type, querytype, source, output)
+        compute_graph_unweighted(type, querytype, source, output)
     else:
         print "Notice: edges file named %s already exists, using that." % edges
     if type == "path":

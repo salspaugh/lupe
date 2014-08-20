@@ -18,6 +18,41 @@ class QueryType(object):
     INTERACTIVE = "interactive"
     SCHEDULED = "scheduled"
 
+def longest_common_subsequences_unweighted(source, querytype, output):
+    sequences_appearances = defaultdict(int)
+    sequences_queries = defaultdict(int)
+    nqueries = 0
+    for query in fetch_queries(source, querytype):
+        nqueries += 1
+        categories = lookup_categories(query)
+        sequences_in_query = set()
+        for length in range(MIN_LEN, MAX_LEN+1):
+            for idx, item in enumerate(categories[:-length+1]):
+                sequence = tuple([length] + categories[idx:idx+length])
+                sequences_in_query.add(sequence)
+                sequences_appearances[sequence] += 1.
+        for sequence in sequences_in_query:
+            sequences_queries[sequence] += 1.
+    write_sequences(sequences_appearances, output, sequences_queries, nqueries)
+
+def fetch_queries(source, query_type):
+    source.connect()
+    if query_type == QueryType.INTERACTIVE:
+        sql = "SELECT text FROM queries, users \
+                WHERE queries.user_id=users.id AND \
+                    is_interactive=true AND \
+                    is_suspicious=false AND \
+                    user_type is null"
+    elif query_type == QueryType.SCHEDULED:
+        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
+    else:
+        raise RuntimeError("Invalid query type.")
+    cursor = source.execute(sql)
+    for row in cursor.fetchall():
+        yield row["text"]
+    source.close()
+
+
 def longest_common_subsequences(source, querytype, output):
     nusers = nqueries = 0.
     sequences = defaultdict(int)
@@ -40,14 +75,14 @@ def longest_common_subsequences(source, querytype, output):
     sequences = { k: v / nusers for k, v in sequences.items()}
     write_sequences(sequences, output, nqueries)
     
-def write_sequences(sequences, output, total):
+def write_sequences(sequences, output, total, nqueries):
     with open(output, 'w') as f:
         writer = csv.writer(f)
         r = ["N", "Count", "Percent of Total Queries", "Subsequence"]
         writer.writerow(r)
         for s in sorted(sequences, key=sequences.get, reverse=True):
             cnt = sequences[s]
-            pct = "{0:.4f}".format(cnt/float(total))
+            pct = "{0:.2f}".format(float(total[s])/nqueries*100)
             seq = " ".join([str(item) for item in s[1:]])
             r = [s[0], cnt, pct, seq]
             writer.writerow(r)
@@ -88,4 +123,4 @@ if __name__ == "__main__":
     src_class = SOURCES[args.source][0]
     src_args = lookup(vars(args), SOURCES[args.source][1])
     source = src_class(*src_args)
-    longest_common_subsequences(source, args.querytype, args.output)
+    longest_common_subsequences_unweighted(source, args.querytype, args.output)

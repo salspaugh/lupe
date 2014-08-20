@@ -60,6 +60,8 @@ class FiniteStateMachine(object):
 
     DOT_ATTRS = {
         'directed': True,
+        'arrowtype': 'open',
+        'arrowsize': 20.0,
         'strict': False,
         'rankdir': 'LR',
         'resolution': 200.0,
