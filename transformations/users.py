@@ -2,9 +2,9 @@ from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
 from queryutils.databases import PostgresDB, SQLite3DB
-from queryutils.query import QueryType
 from queryutils.files import CSVFiles, JSONFiles
 from queryutils.parse import tokenize_query
+from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories, lookup_commands
 
 SOURCES = {

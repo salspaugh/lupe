@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from queryutils.databases import PostgresDB, SQLite3DB
 from queryutils.files import CSVFiles, JSONFiles
 from queryutils.parse import tokenize_query
-from queryutils.splunktypes import lookup_categories
+from queryutils.splunktypes import lookup_categories, lookup_commands
 
 SOURCES = {
     "postgresdb": (PostgresDB, ["database", "user", "password"]),
@@ -171,19 +171,6 @@ def tally_unweighted(source, query_type, output):
                 percent = float(count) / total_transform
                 line = "%12s %50s %9d %8.2f\n" % (transform, command, count, percent)
                 out.write(line)
-
-def lookup_commands(querystring):
-    commands = []
-    tokens = tokenize_query(querystring)
-    for token in tokens:
-        val = token.value.strip().lower()
-        if token.type == "EXTERNAL_COMMAND":
-            commands.append(val)
-        elif token.type == "MACRO":
-            commands.append(val)
-        elif token.type not in ["ARGS", "PIPE", "LBRACKET", "RBRACKET"]:
-            commands.append(val)
-    return commands
 
 
 def lookup(dictionary, lookup_keys):
