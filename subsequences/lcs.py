@@ -1,5 +1,6 @@
 from collections import defaultdict
 from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.query import QueryType
 from queryutils.files import CSVFiles, JSONFiles
 from queryutils.splunktypes import lookup_categories
 import csv
@@ -14,16 +15,12 @@ SOURCES = {
 MIN_LEN = 2
 MAX_LEN = 6
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
 def longest_common_subsequences(source, querytype, output):
     nusers = nqueries = 0.
     sequences = defaultdict(int)
     for user in source.get_users_with_queries():
         if querytype == QueryType.INTERACTIVE:
-            queries = [q for q in user.interactive_queries 
+            queries = [q for q in user.interactive_queries
                 if not q.is_suspicious]
         elif querytype == QueryType.SCHEDULED:
             queries = set([q.text for q in user.noninteractive_queries])
@@ -39,7 +36,7 @@ def longest_common_subsequences(source, querytype, output):
         nusers += 1.
     sequences = { k: v / nusers for k, v in sequences.items()}
     write_sequences(sequences, output, nqueries)
-    
+
 def write_sequences(sequences, output, total):
     with open(output, 'w') as f:
         writer = csv.writer(f)
@@ -62,7 +59,7 @@ if __name__ == "__main__":
                         help="one of: " + ", ".join(SOURCES.keys()))
     parser.add_argument("-a", "--path",
                         help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
+    parser.add_argument("-v", "--version", #TODO: Print possible versions
                         help="the version of data collected")
     parser.add_argument("-U", "--user",
                         help="the user name for the Postgres database")

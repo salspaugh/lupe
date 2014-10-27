@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from queryutils.databases import PostgresDB, SQLite3DB
 from queryutils.files import CSVFiles, JSONFiles
+from queryutils.query import QueryType
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
 
@@ -11,18 +12,14 @@ SOURCES = {
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
 def main(source, querytype):
     needs = defaultdict(int)
     source.connect()
     nqueries = 0
     if querytype == QueryType.INTERACTIVE:
-        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false") 
+        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false")
     elif querytype == QueryType.SCHEDULED:
-        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false") 
+        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false")
     else:
         raise RuntimeError("Invalid query type.")
     for row in cursor.fetchall():
@@ -51,7 +48,7 @@ if __name__ == "__main__":
                         help="one of: " + ", ".join(SOURCES.keys()))
     parser.add_argument("-a", "--path",
                         help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
+    parser.add_argument("-v", "--version", #TODO: Print possible versions
                         help="the version of data collected")
     parser.add_argument("-U", "--user",
                         help="the user name for the Postgres database")

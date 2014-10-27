@@ -1,6 +1,7 @@
 from fsm import State, FiniteStateMachine, get_graph
 from json import load, dump
 from queryutils.splunktypes import lookup_categories
+from queryutils.query import QueryType
 import re
 
 START_TOKEN = "<start>"  # token you want to represent as start of query
@@ -8,11 +9,7 @@ END_TOKEN = "<end>"  # token you want to represent as end of query
 THRESHOLD = 0.2  # Change to 0 if you want to show all edges
 EDGE_FORMAT = "{:.2f}"
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
-def compute_graph(type, querytype, source, output): 
+def compute_graph(type, querytype, source, output):
     graph = {}
     distinct = set()
     ntotal = nincluded = nusers = 0.
@@ -22,7 +19,7 @@ def compute_graph(type, querytype, source, output):
         print "Getting data for user " + str(user.name) + "..."
         if querytype == QueryType.INTERACTIVE:
             if user.user_type == "suspicious": continue
-            queries = [q.text for q in user.interactive_queries 
+            queries = [q.text for q in user.interactive_queries
                 if not q.is_suspicious]
         elif querytype == QueryType.SCHEDULED:
             queries = set([q.text for q in user.noninteractive_queries])
@@ -143,8 +140,8 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
 
     title = graph_data["title"]
     title = State(title)
-    
-    edges = graph_data["edges"] 
+
+    edges = graph_data["edges"]
     # Add edges that are heavier than the threshold.
     for (edge, weight) in edges:
         if weight < threshold: break

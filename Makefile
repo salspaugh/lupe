@@ -13,6 +13,7 @@ toppaths:
 	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig3 -t path
 
 fig2:
+	python transformations/barchart.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig2
 
 fig3:
 	python statemachines/main.py -s postgresdb -U lupe -P lupe -D lupe -o results/fig3 -t user

@@ -2,6 +2,7 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.query import QueryType
 from queryutils.files import CSVFiles, JSONFiles
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
@@ -11,18 +12,14 @@ SOURCES = {
     "sqlite3db": (SQLite3DB, ["srcpath"])
 }
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
 def main(source, querytype, transformation):
     counted = defaultdict(int)
     source.connect()
     nqueries = 0
     if querytype == QueryType.INTERACTIVE:
-        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false") 
+        cursor = source.execute("SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false")
     elif querytype == QueryType.SCHEDULED:
-        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false") 
+        cursor = source.execute("SELECT DISTINCT text FROM queries WHERE is_interactive=false")
     else:
         raise RuntimeError("Invalid query type.")
     for row in cursor.fetchall():
@@ -34,7 +31,7 @@ def main(source, querytype, transformation):
             if category == transformation:
                 counted[command] += 1
     total = sum(counted.values())
-    counted = sorted(counted.iteritems(), key=lambda x: x[1], reverse=True) 
+    counted = sorted(counted.iteritems(), key=lambda x: x[1], reverse=True)
     print "command, count"
     for (cmd, cnt) in counted:
         pct = float(cnt) / total
@@ -59,13 +56,12 @@ def lookup(dictionary, lookup_keys):
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
-        description="Bar graph describing how frequently commands of various \
-                     types of appear in all user queries.")
+        description="Prints top commands for a given transformation type.")
     parser.add_argument("-s", "--source",
                         help="one of: " + ", ".join(SOURCES.keys()))
     parser.add_argument("-a", "--path",
                         help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
+    parser.add_argument("-v", "--version", #TODO: Print possible versions
                         help="the version of data collected")
     parser.add_argument("-U", "--user",
                         help="the user name for the Postgres database")
