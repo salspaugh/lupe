@@ -12,7 +12,7 @@ def classify_stage(parsetree, features_code, classifier):
     feature_functions = get_features(features_code)
     features = featurize_obj(parsetree, feature_functions)
     if features is not None:
-        feautures = features[1:] # first one is ID
+        features = features[1:] # first one is ID
     classification = classify.classify(features, classifier)
     return int(classification)
 

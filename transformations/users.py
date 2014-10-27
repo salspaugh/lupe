@@ -56,7 +56,7 @@ if __name__ == "__main__":
         raise RuntimeError(
             "You must specify where to fetch the data and the corresponding arguments (-s or --source).")
     if args.output is None:
-        args.output = "categories_histogram"
+        args.output = "user_tallies"
     if args.querytype is None:
         raise RuntimeError("You must specify a query type.")
     src_class = SOURCES[args.source][0]

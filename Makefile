@@ -4,6 +4,7 @@ tab2:
 
 tab3:
 	echo "TODO: Outputting data for table 3."
+	python transformations/commands.py -s postgresdb -P lupe -D lupe -U lupe -o results/tab3 -q scheduled
 
 tab4:
 	python subsequences/lcs.py -s postgresdb -P lupe -D lupe -U lupe -o results/tab4.csv -q scheduled

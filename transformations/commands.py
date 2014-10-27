@@ -170,7 +170,7 @@ def tally_unweighted(source, query_type, output):
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
-        description="Bar graph describing how frequently each transformation appears in user queries.")
+        description="Prints commands for transforms including the percent of queries they appear in.")
     args = get_arguments(parser, o=True, w=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         raise RuntimeError(
             "You must specify where to fetch the data and the corresponding arguments (-s or --source).")
     if args.output is None:
-        args.output = "categories_histogram"
+        args.output = "transform_commands"
     if args.querytype is None:
         raise RuntimeError("You must specify a query type.")
     src_class = SOURCES[args.source][0]
