@@ -1,14 +1,9 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.arguments import get_arguments, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
-
-SOURCES = {
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
 
 def main(source, query_type, user_weighted, output):
     stage_pcts, nstages, query_pcts, nqueries = tally(source, query_type, user_weighted)
@@ -147,25 +142,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Bar graph describing how frequently each transformation appears in user queries.")
-    parser.add_argument("-s", "--source",
-                        help="one of: " + ", ".join(SOURCES.keys()))
-    parser.add_argument("-a", "--path",
-                        help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions
-                        help="the version of data collected")
-    parser.add_argument("-U", "--user",
-                        help="the user name for the Postgres database")
-    parser.add_argument("-P", "--password",
-                        help="the password for the Postgres database")
-    parser.add_argument("-D", "--database",
-                        help="the database for Postgres")
-    parser.add_argument("-o", "--output",
-                        help="the name of the output file")
-    parser.add_argument("-q", "--querytype",
-                        help="the type of queries (scheduled or interactive)")
-    parser.add_argument("-w", "--weighted", action="store_true",
-                        help="if true, average across users")
-    args = parser.parse_args()
+    args = get_arguments(parser, o=True, w=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()

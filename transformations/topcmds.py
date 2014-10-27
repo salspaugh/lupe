@@ -1,16 +1,10 @@
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
-from queryutils.databases import PostgresDB, SQLite3DB
-from queryutils.files import CSVFiles, JSONFiles
+from queryutils.arguments import get_arguments, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
-
-SOURCES = {
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
 
 def main(source, querytype, transformation):
     counted = defaultdict(int)
@@ -57,23 +51,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Prints top commands for a given transformation type.")
-    parser.add_argument("-s", "--source",
-                        help="one of: " + ", ".join(SOURCES.keys()))
-    parser.add_argument("-a", "--path",
-                        help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions
-                        help="the version of data collected")
-    parser.add_argument("-U", "--user",
-                        help="the user name for the Postgres database")
-    parser.add_argument("-P", "--password",
-                        help="the password for the Postgres database")
-    parser.add_argument("-D", "--database",
-                        help="the database for Postgres")
-    parser.add_argument("-q", "--querytype",
-                        help="the type of queries (scheduled or interactive)")
-    parser.add_argument("-t", "--transformation",
-                        help="the type of transformation to count")
-    args = parser.parse_args()
+    args = get_arguments(parser, t=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()
