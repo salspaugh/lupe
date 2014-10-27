@@ -1,5 +1,5 @@
 from collections import defaultdict
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
 import csv
@@ -40,9 +40,6 @@ def write_sequences(sequences, output, total):
             seq = " ".join([str(item) for item in s[1:]])
             r = [s[0], cnt, pct, seq]
             writer.writerow(r)
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

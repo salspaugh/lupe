@@ -1,4 +1,4 @@
-from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.arguments import lookup, SOURCES
 from queryutils.query import QueryType
 from queryutils.parse import tokenize_query, split_query_into_stages, parse_query
 from queryutils.splunktypes import lookup_categories
@@ -6,11 +6,6 @@ from featurize import get_features, featurize_obj
 import json
 import csv
 from collections import defaultdict
-
-SOURCES = {
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
 
 FEATURE_CODES = {
     "Filter": "filters01",
@@ -222,10 +217,6 @@ def lookup_features(parsetree, features_code):
     feature_functions = get_features(features_code)
     features = featurize_obj(parsetree, feature_functions)
     return features
-
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

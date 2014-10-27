@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories, lookup_commands
 
@@ -166,9 +166,6 @@ def tally_unweighted(source, query_type, output):
                 line = "%12s %50s %9d %8.2f\n" % (transform, command, count, percent)
                 out.write(line)
 
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

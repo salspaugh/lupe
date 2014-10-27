@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
@@ -31,9 +31,6 @@ def print_transform_data(source, query_type, transform):
     print "Number of distinct queries with %ss: %d" % (transform, len(stats.keys()))
     print "Average number of %s stages for such queries: %f" % (transform, avg_transforms)
     print "Number of users using %ss: %d" % (transform, len(users))
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

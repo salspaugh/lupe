@@ -1,4 +1,4 @@
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from graph import compute_graph, create_fsm
 from paths import compute_top_paths
 from os import path
@@ -19,9 +19,6 @@ def main(type, source, querytype, output, threshold):
         compute_top_paths(edges, output)
     else:
         create_fsm(output, edges, threshold)
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

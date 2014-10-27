@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories, lookup_commands
@@ -42,9 +42,6 @@ def tally_users_per(source, query_type, output, category):
     print "Max distinct %s per user: %.4f:" %  (category, numpy.max(distinct_ctgy_per))
     print "Min distinct %s per user: %.4f:" %  (category, numpy.min(distinct_ctgy_per))
     print "Average total %s per user: %.4f:" % (category, numpy.mean([len(c) for c in ctgy_cnt.values()]))
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

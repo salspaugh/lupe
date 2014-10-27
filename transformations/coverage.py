@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.parse import tokenize_query
 from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
@@ -29,9 +29,6 @@ def main(source, querytype):
         pct = float(cnt) / float(nqueries)
         print "%s, %d, %f" % (",".join(list(need)), cnt, pct)
     source.close()
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, SOURCES
+from queryutils.arguments import get_arguments, lookup, SOURCES
 from queryutils.query import QueryType
 from queryutils.parse import tokenize_query, split_query_into_stages, parse_query
 from queryutils.splunktypes import lookup_categories
@@ -113,9 +113,6 @@ def plot_barchart(stage_percents, stages_label, query_percents, queries_label, o
     plt.autoscale(enable=True, axis="x", tight=None)
     plt.tight_layout()
     plt.savefig(output + ".pdf", dpi=400)
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
