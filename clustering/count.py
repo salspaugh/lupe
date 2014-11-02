@@ -118,7 +118,11 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Bar graph describing how frequently each transformation appears in user queries.")
-    args = get_arguments(parser, o=True, w=True, t=True, e=True)
+    parser.add_argument("-t", "--transform",
+                        help="the transform to count")
+    parser.add_argument("-e", "--examples",
+                        help="the training data file to train the classifier (.csv)")
+    args = get_arguments(parser, o=True, w=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()

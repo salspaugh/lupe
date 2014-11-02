@@ -101,6 +101,21 @@ def tally_unweighted(source, query_type):
     return stage_pct, nstages, query_pct, nqueries
 
 def plot_barchart(stage_percents, stages_label, query_percents, queries_label, output):
+    """Plots bar chart of percentage of stages and percentage of queries for each type of transform
+
+    Args:
+        stage_percents:
+        stages_label:
+        query_percents:
+        queries_label:
+        output:
+
+    Returns:
+
+
+    Raises:
+        IOError: An error occurred accessing the bigtable.Table object.
+    """
 
     spcts = sorted(stage_percents.iteritems(), key=lambda x: x[1], reverse=True)
     names = [k for (k,v) in spcts]

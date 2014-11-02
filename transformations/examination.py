@@ -36,7 +36,9 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Tallies queries, stages, and users containing a given transformation.")
-    args = get_arguments(parser, t=True)
+    parser.add_argument("-t", "--transform",
+                        help="the type of transformation to examine")
+    args = get_arguments(parser)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()
