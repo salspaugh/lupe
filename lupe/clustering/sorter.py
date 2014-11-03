@@ -1,4 +1,5 @@
-from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.arguments import lookup, SOURCES
+from queryutils.query import QueryType
 from queryutils.parse import tokenize_query, split_query_into_stages, parse_query
 from queryutils.splunktypes import lookup_categories
 from featurize import get_features, featurize_obj
@@ -6,19 +7,10 @@ import json
 import csv
 from collections import defaultdict
 
-SOURCES = {
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
-
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
 FEATURE_CODES = {
     "Filter": "filters01",
     "Augment": "augments01",
-    "Aggregate": "aggregates01" 
+    "Aggregate": "aggregates01"
 }
 
 FILTER_CODES = {
@@ -57,7 +49,7 @@ AGGREGATE_CODES = {
 SORTING_CODES = {
     "Filter": FILTER_CODES,
     "Augment": AUGMENT_CODES,
-    "Aggregate": AGGREGATE_CODES 
+    "Aggregate": AGGREGATE_CODES
 }
 
 
@@ -110,7 +102,7 @@ def sort(source, query_type, transform, output, append):
     with open(examples_filename, write_bit) as examples:
         writer = csv.writer(examples)
         has_header = False
-        for query in fetch_queries(source, query_type):
+        for query in source.fetch_queries(query_type):
             for parsetree in parsed_stages(query, transform):
                 identifier = "%d.%d" % (len(records), parsetree.position)
                 if identifier in records: continue
@@ -155,7 +147,7 @@ def valid_code(code, valid_codes):
     return code in valid_codes.values() and code != valid_codes["unknown"]
 
 def write_header(x, writer):
-    header = ["X%d"]*len(x) 
+    header = ["X%d"]*len(x)
     header = [s % i for i, s in enumerate(header)]
     header = ["Y"] + header
     writer.writerow(header)
@@ -207,23 +199,6 @@ def make_message(identifier, parsetree, sorting_codes):
     msg += "\n\n\tEnter X to exit. Input: "
     return msg
 
-def fetch_queries(source, query_type):
-    source.connect()
-    if query_type == QueryType.INTERACTIVE:
-        sql = "SELECT text FROM queries, users \
-                WHERE queries.user_id=users.id AND \
-                    is_interactive=true AND \
-                    is_suspicious=false AND \
-                    user_type is null"
-    elif query_type == QueryType.SCHEDULED:
-        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
-    else:
-        raise RuntimeError("Invalid query type.")
-    cursor = source.execute(sql)
-    for row in cursor.fetchall():
-        yield row["text"]
-    source.close()
-
 def parsed_stages(query, chosen_transform):
     stages = split_query_into_stages(query)
     for pos, stage in enumerate(stages):
@@ -243,10 +218,6 @@ def lookup_features(parsetree, features_code):
     features = featurize_obj(parsetree, feature_functions)
     return features
 
-
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
-
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
@@ -255,7 +226,7 @@ if __name__ == "__main__":
                         help="one of: " + ", ".join(SOURCES.keys()))
     parser.add_argument("-a", "--path",
                         help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
+    parser.add_argument("-v", "--version", #TODO: Print possible versions
                         help="the version of data collected")
     parser.add_argument("-U", "--user",
                         help="the user name for the Postgres database")
