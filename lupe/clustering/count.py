@@ -1,22 +1,18 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.arguments import get_arguments, lookup, SOURCES
+from queryutils.query import QueryType
 from queryutils.parse import tokenize_query, split_query_into_stages, parse_query
 from queryutils.splunktypes import lookup_categories
 from featurize import get_features, featurize_obj
 import classify
 
-SOURCES = {
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
-
 def classify_stage(parsetree, features_code, classifier):
     feature_functions = get_features(features_code)
     features = featurize_obj(parsetree, feature_functions)
     if features is not None:
-        feautures = features[1:] # first one is ID
+        features = features[1:] # first one is ID
     classification = classify.classify(features, classifier)
     return int(classification)
 
@@ -72,10 +68,6 @@ TRANSFORM_LABELS = {
     "Aggregate": AGGREGATE_LABELS
 }
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
 def main(source, query_type, user_weighted, chosen_transform, examples, output, classify=False):
     if classify:
         classify_and_count(source, query_type, user_weighted, chosen_transform, examples, output)
@@ -103,7 +95,7 @@ def classify_and_count(source, query_type, user_weighted, chosen_transform, exam
 
 def classify_and_count_weighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = {}
-    for (user, query) in fetch_queries_by_user(source, query_type):
+    for (user, query) in source.fetch_queries_by_user(query_type):
         if not user in chosen_transform_counts:
             chosen_transform_counts[user] = defaultdict(int)
         classify_and_count_query(query, chosen_transform, chosen_transform_counts[user], clf)
@@ -115,6 +107,11 @@ def classify_and_count_unweighted(source, query_type, chosen_transform, clf, out
     print_counts(chosen_transform_counts, totalincl=True)
  
 def print_counts(cnts, totalincl=False):
+    for query in source.fetch_queries(query_type):
+        count_classes_query(query, chosen_transform, chosen_transform_counts, clf)
+    print_chosen_transform_counts(chosen_transform_counts)
+
+def print_chosen_transform_counts(cnts):
     total = float(sum(cnts.values()))
     cnts = sorted(cnts.iteritems(), key=lambda x: x[1], reverse=True)
     for (label, cnt) in cnts:
@@ -201,38 +198,17 @@ def plot_barchart(counts, output, transform):
     plt.tight_layout()
     plt.savefig(output + ".pdf", dpi=400)
 
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
-
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Bar graph describing how frequently each transformation appears in user queries.")
-    parser.add_argument("-s", "--source",
-                        help="one of: " + ", ".join(SOURCES.keys()))
-    parser.add_argument("-a", "--path",
-                        help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
-                        help="the version of data collected")
-    parser.add_argument("-U", "--user",
-                        help="the user name for the Postgres database")
-    parser.add_argument("-P", "--password",
-                        help="the password for the Postgres database")
-    parser.add_argument("-D", "--database",
-                        help="the database for Postgres")
-    parser.add_argument("-o", "--output",
-                        help="the name of the output file")
-    parser.add_argument("-q", "--querytype",
-                        help="the type of queries (scheduled or interactive)")
-    parser.add_argument("-w", "--weighted", action="store_true",
-                        help="if true, average across users")
     parser.add_argument("-t", "--transform",
                         help="the transform to count")
     parser.add_argument("-e", "--examples",
                         help="the training data file to train the classifier (.csv)")
     parser.add_argument("-c", "--classify", action="store_true",
                         help="whether or not to classify the entire data set or simply count examples")
-    args = parser.parse_args()
+    args = get_arguments(parser, o=True, w=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()

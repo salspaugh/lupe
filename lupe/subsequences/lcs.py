@@ -1,22 +1,11 @@
 from collections import defaultdict
-from queryutils.databases import PostgresDB, SQLite3DB
-from queryutils.files import CSVFiles, JSONFiles
+from queryutils.arguments import get_arguments, lookup, SOURCES
+from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
 import csv
 
-SOURCES = {
-    "csvfiles": (CSVFiles, ["path", "version"]),
-    "jsonfiles": (JSONFiles, ["path", "version"]),
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
-
 MIN_LEN = 2
 MAX_LEN = 6
-
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
 
 def longest_common_subsequences_unweighted(source, querytype, output):
     sequences_appearances = defaultdict(int)
@@ -58,7 +47,7 @@ def longest_common_subsequences(source, querytype, output):
     sequences = defaultdict(int)
     for user in source.get_users_with_queries():
         if querytype == QueryType.INTERACTIVE:
-            queries = [q for q in user.interactive_queries 
+            queries = [q for q in user.interactive_queries
                 if not q.is_suspicious]
         elif querytype == QueryType.SCHEDULED:
             queries = set([q.text for q in user.noninteractive_queries])
@@ -87,29 +76,10 @@ def write_sequences(sequences, output, total, nqueries):
             r = [s[0], cnt, pct, seq]
             writer.writerow(r)
 
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
-
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(description="Prints list of longest common subsequences from all scheduled queries.")
-    parser.add_argument("-s", "--source",
-                        help="one of: " + ", ".join(SOURCES.keys()))
-    parser.add_argument("-a", "--path",
-                        help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
-                        help="the version of data collected")
-    parser.add_argument("-U", "--user",
-                        help="the user name for the Postgres database")
-    parser.add_argument("-P", "--password",
-                        help="the password for the Postgres database")
-    parser.add_argument("-D", "--database",
-                        help="the database for Postgres")
-    parser.add_argument("-o", "--output",
-                        help="the name of the output file")
-    parser.add_argument("-q", "--querytype",
-                        help="the type of queries (scheduled or interactive)")
-    args = parser.parse_args()
+    args = get_arguments(parser, o=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()

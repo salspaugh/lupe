@@ -1,6 +1,7 @@
 from fsm import State, FiniteStateMachine, get_graph
 from json import load, dump
 from queryutils.splunktypes import lookup_categories
+from queryutils.query import QueryType
 import re
 
 START_TOKEN = "<start>"  # token you want to represent as start of query
@@ -8,29 +9,7 @@ END_TOKEN = "<end>"  # token you want to represent as end of query
 THRESHOLD = 0.2  # Change to 0 if you want to show all edges
 EDGE_FORMAT = "{:.2f}"
 
-class QueryType(object):
-    INTERACTIVE = "interactive"
-    SCHEDULED = "scheduled"
-
-def compute_graph_unweighted(type, querytype, source, output):
-    graph = {}
-    ntotal = nincluded = 0.
-    if type != "user":
-        st = re.compile(".*\s*(typetype)\s*(=)\s*['\"]?("+type+").*['\"]?")
-        s = re.compile(".*\s*(type)\s*(=)\s*['\"]?("+type+").*['\"]?")
-    for query in fetch_queries(source, querytype):
-        ntotal += 1
-        if type != "user" and st.match(query) or s.match(query):
-            nincluded += 1
-            graph = tally_completions(query, graph)
-    edges = {}
-    for (source, sinks) in graph.iteritems():
-        total_outgoing = float(sum(sinks.values()))
-        for (sink, cnt) in sinks.iteritems():
-            edges[(source, sink)] = cnt/total_outgoing
-    output_graph_data(edges, output + "-edges", nincluded, ntotal)
-
-def compute_graph_weighted(type, querytype, source, output): 
+def compute_graph(type, querytype, source, output):
     graph = {}
     distinct = set()
     ntotal = nincluded = nusers = 0.
@@ -40,7 +19,7 @@ def compute_graph_weighted(type, querytype, source, output):
         print "Getting data for user " + str(user.name) + "..."
         if querytype == QueryType.INTERACTIVE:
             if user.user_type == "suspicious": continue
-            queries = [q.text for q in user.interactive_queries 
+            queries = [q.text for q in user.interactive_queries
                 if not q.is_suspicious]
         elif querytype == QueryType.SCHEDULED:
             queries = set([q.text for q in user.noninteractive_queries])
@@ -176,11 +155,10 @@ def create_fsm(label, datafilename, threshold=THRESHOLD):
 
     graph_data = read_graph_data(datafilename)
 
-    #title = graph_data["title"]
-    #title = State(title)
-    title = ""
-    
-    edges = graph_data["edges"] 
+    title = graph_data["title"]
+    title = State(title)
+
+    edges = graph_data["edges"]
     # Add edges that are heavier than the threshold.
     for (edge, weight) in edges:
         if weight < threshold: break

@@ -16,8 +16,7 @@ logger.addHandler(handler)
 from argparse import ArgumentParser
 from data import *
 from pipeline import *
-from queryutils.files import CSVFiles, JSONFiles
-from queryutils.databases import PostgresDB, SQLite3DB
+from queryutils.arguments import lookup, SOURCES
 
 # Uncomment to debug:
 # from numpy import seterr
@@ -26,21 +25,14 @@ from queryutils.databases import PostgresDB, SQLite3DB
 NON_PCA_PIPELINES = [1, 5, 6, 8]
 PCA_PIPELINES = [2, 3, 4, 7, 9]
 
-SOURCES = {
-    "csvfiles": (CSVFiles, ["path", "version"]),
-    "jsonfiles": (JSONFiles, ["path", "version"]),
-    "postgresdb": (PostgresDB, ["database", "user", "password"]),
-    "sqlite3db": (SQLite3DB, ["srcpath"])
-}
-
 def get_args():
 
     # We're using optional arguments above but nonetheless some of them are required.
     # We prefer optional arguments because the letters are useful mnemonics
     # and position doesn't matter.
-    
+
     feature_options = ", ".join(get_feature_modules())
-    object_options = [x for x in dir(Clusterees) 
+    object_options = [x for x in dir(Clusterees)
         if not x[:2] == "__" and not x[:-2] == "__"]
     object_options = [getattr(Clusterees, x) for x in object_options]
     object_options = ", ".join(object_options)
@@ -50,7 +42,7 @@ def get_args():
                         help="one of: " + ", ".join(SOURCES.keys()))
     parser.add_argument("-a", "--path",
                         help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions 
+    parser.add_argument("-v", "--version", #TODO: Print possible versions
                         help="the version of data collected")
     parser.add_argument("-U", "--user",
                         help="the user name for the Postgres database")
@@ -122,7 +114,7 @@ def get_feature_modules():
     return features
 
 def check_args(args):
-    
+
     # TODO: Make sure the proper arguments for the given source are passed in.
     if not args.source:
         raise RuntimeError(
@@ -148,9 +140,9 @@ def check_args(args):
         args.outputmouseovers = "outputmouseovers"
 
 
-def main(src, srcargs, pipeline, nclusters, featurecode, 
-        clusterees, clusterer, 
-        outputclusters, outputfeatures, outputmouseovers, 
+def main(src, srcargs, pipeline, nclusters, featurecode,
+        clusterees, clusterer,
+        outputclusters, outputfeatures, outputmouseovers,
         inputfeatures, inputmouseovers,
         pcadims, normalize):
 
@@ -177,7 +169,7 @@ def main(src, srcargs, pipeline, nclusters, featurecode,
     src_class = SOURCES[src][0]
     src_args = lookup(srcargs, SOURCES[src][1])
     source = src_class(*src_args)
-    
+
     if inputfeatures is None or inputmouseovers is None:
         data, mouseovers = fetch_data(source, clusterees)
         output_mouseovers(mouseovers, outputmouseovers)
@@ -200,15 +192,11 @@ def main(src, srcargs, pipeline, nclusters, featurecode,
     output_projected_points(ids, projected_points, features, outputclusters)
 
 
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
-
-
 if __name__ == "__main__":
     args = get_args()
     check_args(args)
-    main(args.source, vars(args), int(args.pipeline), args.nclusters, args.features, 
-        args.clusterees, args.clusterer, 
-        args.outputclusters, args.outputfeatures, args.outputmouseovers, 
-        args.inputfeatures, args.inputmouseovers, 
+    main(args.source, vars(args), int(args.pipeline), args.nclusters, args.features,
+        args.clusterees, args.clusterer,
+        args.outputclusters, args.outputfeatures, args.outputmouseovers,
+        args.inputfeatures, args.inputmouseovers,
         args.pcadimension, args.normalize)
