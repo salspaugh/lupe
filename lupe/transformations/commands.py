@@ -6,13 +6,35 @@ from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories, lookup_commands
 
 def main(source, query_type, user_weighted, output):
+    """Calls either tally_weighted() or tally_unweighted() to tally commands per
+    transformation along with the percentage of stages and queries they appear in.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param user_weighted: true if the data should be averaged across users
+    :type user_weighted: boolean
+    :param output: the name of the output file containing the output data
+    :type output: str
+    """
     if user_weighted:
         return tally_weighted(source, query_type, output)
     else:
         return tally_unweighted(source, query_type, output)
 
 def tally_weighted(source, query_type, output):
+    """Tallies commands per transformation, then calls aggregate_stage_counts() and
+    aggregate_query_counts() to calculate count and percentage of stages and queries
+    commands appear in averaged across users.
 
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param output: the name of the output file containing the output data
+    :type output: str
+    """
     stage_cnt = {}
     query_cnt = {}
     user_cnt = {}
@@ -52,6 +74,17 @@ def tally_weighted(source, query_type, output):
     aggregate_query_counts(query_cnt, query_tfm_cnt, all_transforms, all_commands, output)
 
 def aggregate_stage_counts(stage_cnt, all_transforms, all_commands, output):
+    """Calculates average count and percentage of stages for commands of each transformation.
+
+    :param stage_cnt: dict of users to dict of transformations to dict of commands' stage count
+    :type stage_cnt: dict
+    :param all_transforms: all seen transformations
+    :type all_transforms: set
+    :param all_commands: all seen commands
+    :type all_commands: defaultdict(set)
+    :param output: the name of the output file containing the output data
+    :type output: str
+    """
     out = "%s-weighted-stages-commands-counts.txt" % output
     stage_cnt_avg = {}
     stage_pct_avg = {}
@@ -87,6 +120,19 @@ def aggregate_stage_counts(stage_cnt, all_transforms, all_commands, output):
                 out.write(line)
 
 def aggregate_query_counts(query_cnt, query_tfm_cnt, all_transforms, all_commands, output):
+    """Calculates average count and percentage of queries for commands of each transformation.
+
+    :param query_cnt: dict of users to dict of transformations to dict of commands' query count
+    :type query_cnt: dict
+    :param query_tfm_cnt: dict of users to dict of total counts of transformations
+    :type query_tfm_cnt: dict
+    :param all_transforms: all seen transformations
+    :type all_transforms: set
+    :param all_commands: all seen commands
+    :type all_commands: defaultdict(set)
+    :param output: the name of the output file containing the output data
+    :type output: str
+    """
     out = "%s-weighted-queries-commands-counts.txt" % output
     query_cnt_avg = {}
     query_pct_avg = {}
@@ -119,7 +165,16 @@ def aggregate_query_counts(query_cnt, query_tfm_cnt, all_transforms, all_command
                 out.write(line)
 
 def tally_unweighted(source, query_type, output):
+    """Tallies commands per transformation as well as the counts of stages and queries
+    in which they appear.
 
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param output: the name of the output file containing the output data
+    :type output: str
+    """
     stage_cnt = {}
     query_cnt = {}
     query_tfm_cnt = defaultdict(int)
@@ -170,7 +225,7 @@ def tally_unweighted(source, query_type, output):
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
-        description="Prints commands for transforms including the percent of queries they appear in.")
+        description="Prints commands for transformations including counts of stages and queries they appear in.")
     args = get_arguments(parser, o=True, w=True)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()

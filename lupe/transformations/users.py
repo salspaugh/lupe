@@ -11,11 +11,39 @@ class Category(object):
     COMMANDS = "commands"
 
 def main(source, query_type, output):
+    """Calls tally_users_per() on transformations and commands and prints average, max, and min counts
+    of each transformation or command per user.
+
+    This main function first calls tally_users_per() on transformations to calculate and print the
+    average distinct transformations, max distinct transformations, min distinct transformations
+    and average total transformations per user. It then calls tally_users_per() again and does the
+    same for commands.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param output: the name of the output file containing the barchart
+    :type output: str
+    """
     tally_users_per(source, query_type, output, Category.TRANSFORMS)
     tally_users_per(source, query_type, output, Category.COMMANDS)
 
 def tally_users_per(source, query_type, output, category):
+    """Calculates and prints average, max, and min counts of each transformation or command per user.
 
+    This function calculates and prints the average distinct transformations, max distinct transformations,
+    min distinct transformations and average total transformations per user.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param output: the name of the output file containing the barchart
+    :type output: str
+    :param category: the category to tally, either transformations or commands
+    :type category: Category
+    """
     if category == Category.TRANSFORMS:
         lookup_query = lookup_categories
     elif category == Category.COMMANDS:

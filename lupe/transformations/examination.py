@@ -10,6 +10,16 @@ def main(source, query_type, transform):
     print_transform_data(source, query_type, transform)
 
 def print_transform_data(source, query_type, transform):
+    """Calculates and prints total queries, total stages, total distinct queries, average number
+    of stages, and number of users of a given transformation.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param transform: type of transformation to examine
+    :type transform: str
+    """
     stats = defaultdict(int)
     ntransform_queries = ntransform_stages = 0
     users = set()
