@@ -11,7 +11,7 @@ def longest_common_subsequences_unweighted(source, querytype, output):
     sequences_appearances = defaultdict(int)
     sequences_queries = defaultdict(int)
     nqueries = 0
-    for query in fetch_queries(source, querytype):
+    for query in source.fetch_queries(querytype):
         nqueries += 1
         categories = lookup_categories(query)
         sequences_in_query = set()
@@ -23,23 +23,6 @@ def longest_common_subsequences_unweighted(source, querytype, output):
         for sequence in sequences_in_query:
             sequences_queries[sequence] += 1.
     write_sequences(sequences_appearances, output, sequences_queries, nqueries)
-
-def fetch_queries(source, query_type):
-    source.connect()
-    if query_type == QueryType.INTERACTIVE:
-        sql = "SELECT text FROM queries, users \
-                WHERE queries.user_id=users.id AND \
-                    is_interactive=true AND \
-                    is_suspicious=false AND \
-                    user_type is null"
-    elif query_type == QueryType.SCHEDULED:
-        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
-    else:
-        raise RuntimeError("Invalid query type.")
-    cursor = source.execute(sql)
-    for row in cursor.fetchall():
-        yield row["text"]
-    source.close()
 
 
 def longest_common_subsequences(source, querytype, output):
@@ -63,7 +46,7 @@ def longest_common_subsequences(source, querytype, output):
         nusers += 1.
     sequences = { k: v / nusers for k, v in sequences.items()}
     write_sequences(sequences, output, nqueries)
-    
+
 def write_sequences(sequences, output, total, nqueries):
     with open(output, 'w') as f:
         writer = csv.writer(f)

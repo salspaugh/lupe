@@ -7,6 +7,13 @@ from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
 
 def main(source, querytype):
+    """Calculates and prints count and percentage of all sets of transformations that occur in all queries.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param querytype: type of queries to look at; either scheduled or interactive
+    :type querytype: str
+    """
     needs = defaultdict(int)
     source.connect()
     nqueries = 0
@@ -33,8 +40,8 @@ def main(source, querytype):
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(
-        description="Bar graph describing how frequently commands of various \
-                     types of appear in all user queries.")
+        description="Calculates and prints count and percentage of all sets of transformations \
+                    that occur in all queries.")
     args = get_arguments(parser)
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()

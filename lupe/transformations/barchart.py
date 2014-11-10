@@ -6,6 +6,23 @@ from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
 
 def main(source, query_type, user_weighted, output):
+    """Tallies and creates bar chart for percentage of stages and percentage of
+    queries for each type of transformation.
+
+    This main function calls tally() to calculate the percentage of stages
+    and percentage of queries for each type of transformation. Then it calls
+    plot_barchart() to create a bar chart figure of the percentage of stages
+    and percentage of queries.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param user_weighted: true if the data should be averaged across users
+    :type user_weighted: boolean
+    :param output: the name of the output file containing the barchart
+    :type output: str
+    """
     stage_pcts, nstages, query_pcts, nqueries = tally(source, query_type, user_weighted)
     label = "weighted" if user_weighted else "unweighted"
     output = "%s-%s" % (output, label)
@@ -16,13 +33,32 @@ def main(source, query_type, user_weighted, output):
     plot_barchart(stage_pcts, stages_textbox, query_pcts, queries_textbox, output)
 
 def tally(source, query_type, user_weighted):
+    """Calls either tally_weighted() or tally_unweighted() to tally percentage of stages
+    and percentage of queries for each type of transformation.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :param user_weighted: true if the data should be averaged across users
+    :type user_weighted: boolean
+    :rtype: dict, int, dict, int
+    """
     if user_weighted:
         return tally_weighted(source, query_type)
     else:
         return tally_unweighted(source, query_type)
 
 def tally_weighted(source, query_type):
+    """Tallies percentage of stages and percentage of queries for each type of
+    transformation averaged across users.
 
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :rtype: dict, int, dict, int
+    """
     stage_cnt = {}
     nstages = 0
     nstages_per_user = defaultdict(int)
@@ -76,7 +112,15 @@ def tally_weighted(source, query_type):
     return stage_pct, nstages_per_user, query_pct, nqueries_per_user
 
 def tally_unweighted(source, query_type):
+    """Tallies percentage of stages and percentage of queries for each type of
+    transformation.
 
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param query_type: type of queries to look at; either scheduled or interactive
+    :type query_type: str
+    :rtype: dict, int, dict, int
+    """
     stage_cnt = defaultdict(int)
     nstages = 0
 
@@ -101,20 +145,18 @@ def tally_unweighted(source, query_type):
     return stage_pct, nstages, query_pct, nqueries
 
 def plot_barchart(stage_percents, stages_label, query_percents, queries_label, output):
-    """Plots bar chart of percentage of stages and percentage of queries for each type of transform
+    """Plots bar chart of percentage of stages and percentage of queries for each type of transformation.
 
-    Args:
-        stage_percents:
-        stages_label:
-        query_percents:
-        queries_label:
-        output:
-
-    Returns:
-
-
-    Raises:
-        IOError: An error occurred accessing the bigtable.Table object.
+    :param stage_percents: percentage of stages per transformation
+    :type stage_percents: dict
+    :param stages_label: string labeling textbox of total number of stages
+    :type stages_label: str
+    :param query_percents: percentage of queries per transformation
+    :type query_percents: dict
+    :param queries_label: string labeling textbox of total number of queries
+    :type queries_label: str
+    :param output: the name of the output file containing the barchart
+    :type output: str
     """
 
     spcts = sorted(stage_percents.iteritems(), key=lambda x: x[1], reverse=True)

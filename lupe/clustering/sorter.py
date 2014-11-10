@@ -206,30 +206,6 @@ def make_message(identifier, parsetree, sorting_codes):
     msg += "\n\n\tEnter X to exit. Input: "
     return msg
 
-<<<<<<< HEAD:clustering/sorter.py
-def fetch_queries(source, query_type):
-    source.connect()
-    if query_type == QueryType.INTERACTIVE:
-        sql = "SELECT text, queries.id AS qid FROM queries, users \
-                WHERE queries.user_id=users.id AND \
-                    is_interactive=true AND \
-                    is_suspicious=false AND \
-                    user_type is null"
-    elif query_type == QueryType.SCHEDULED:
-        sql = "SELECT min(id) AS qid, text FROM queries \
-                WHERE is_interactive=false \
-                GROUP BY text"
-    else:
-        raise RuntimeError("Invalid query type.")
-    cursor = source.execute(sql)
-    queries = [(row["qid"], row["text"]) for row in cursor.fetchall()]
-    random.shuffle(queries)
-    for query in queries:
-        yield query
-    source.close()
-
-=======
->>>>>>> 4f931e03a0e716c44fbe6a204a4b4dcc897566ba:lupe/clustering/sorter.py
 def parsed_stages(query, chosen_transform):
     stages = split_query_into_stages(query)
     for pos, stage in enumerate(stages):

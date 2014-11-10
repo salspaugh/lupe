@@ -102,10 +102,10 @@ def classify_and_count_weighted(source, query_type, chosen_transform, clf, outpu
 
 def classify_and_count_unweighted(source, query_type, chosen_transform, clf, output):
     chosen_transform_counts = defaultdict(int)
-    for query in fetch_queries(source, query_type):
+    for query in source.fetch_queries(query_type):
         classify_and_count_query(query, chosen_transform, chosen_transform_counts, clf)
     print_counts(chosen_transform_counts, totalincl=True)
- 
+
 def print_counts(cnts, totalincl=False):
     for query in source.fetch_queries(query_type):
         count_classes_query(query, chosen_transform, chosen_transform_counts, clf)
@@ -138,53 +138,14 @@ def classify_and_count_query(query, chosen_transform, counts, clf):
             else:
                 counts["UNPARSED"] += 1
 
-def fetch_queries_by_user(source, query_type):
-    source.connect()
-    if query_type == QueryType.INTERACTIVE:
-        ucursor = source.execute("SELECT id FROM users WHERE user_type is null")
-    elif query_type == QueryType.SCHEDULED:
-        ucursor = source.execute("SELECT id FROM users")
-    else:
-        raise RuntimeError("Invalid query type.")
-    for row in ucursor.fetchall():
-        user_id = row["id"]
-        if query_type == QueryType.INTERACTIVE:
-            sql = "SELECT text FROM queries WHERE is_interactive=true AND is_suspicious=false AND user_id=%s" % source.wildcard
-        elif query_type == QueryType.SCHEDULED:
-            sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false AND user_id=%s" % source.wildcard
-        else:
-            raise RuntimeError("Invalid query type.")
-        qcursor = source.execute(sql, (user_id, )) 
-        for row in qcursor.fetchall():
-            query = row["text"]
-            yield (user_id, query)
-    source.close()
-
-def fetch_queries(source, query_type):
-    source.connect()
-    if query_type == QueryType.INTERACTIVE:
-        sql = "SELECT text FROM queries, users \
-                WHERE queries.user_id=users.id AND \
-                    is_interactive=true AND \
-                    is_suspicious=false AND \
-                    user_type is null"
-    elif query_type == QueryType.SCHEDULED:
-        sql = "SELECT DISTINCT text FROM queries WHERE is_interactive=false"
-    else:
-        raise RuntimeError("Invalid query type.")
-    cursor = source.execute(sql)
-    for row in cursor.fetchall():
-        yield row["text"]
-    source.close()
-
 def plot_barchart(counts, output, transform):
-    
+
     total = float(sum(counts.values()))
     counts = sorted(counts.iteritems(), key=lambda x: x[1], reverse=True)
     index = numpy.arange(len(counts))
     names = [k for (k,v) in counts]
     pcts = [v/total*100. for (k,v) in counts]
-   
+
     plt.subplot()
     plt.bar(index, pcts, 1, color="c")
     plt.ylabel("% transformations", fontsize=18)

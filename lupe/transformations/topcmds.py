@@ -7,6 +7,18 @@ from queryutils.query import QueryType
 from queryutils.splunktypes import lookup_categories
 
 def main(source, querytype, transformation):
+    """Calculates and prints top commands for a given transformation type.
+
+    Calculates counts and percentages for each command in the given transformation
+    type and prints the commands sorted descendingly from their counts.
+
+    :param source: where to fetch the data and arguments
+    :type source: either a CSVFiles, JSONFiles, PostgresDB, or SQLite3DB
+    :param querytype: type of queries to look at; either scheduled or interactive
+    :type querytype: str
+    :param transformation: type of transformation to examine
+    :type transformation: str
+    """
     counted = defaultdict(int)
     source.connect()
     nqueries = 0
