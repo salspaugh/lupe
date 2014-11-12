@@ -1,0 +1,87 @@
+user,search
+unix,search index=os sourcetype=cpu host=$host$ | multikv fields pctIdle | eval Percent_CPU_Load = 100 - pctIdle | timechart avg(Percent_CPU_Load) by host
+unix,search index=os sourcetype=vmstat host=$host$ | multikv fields loadAvg1mi | timechart avg(loadAvg1mi) by host
+unix,"search index=os sourcetype=top host=$host$ | multikv fields pctCPU COMMAND | stats max(pctCPU) as maxCPU by host, COMMAND, _time | sort -maxCPU | dedup 5 host"
+unix,search index=os sourcetype=vmstat host=$host$ | multikv fields threads | timechart avg(threads) by host
+unix,search index=os sourcetype=vmstat host=$host$ | multikv fields processes | timechart avg(processes) by host
+unix,search index=os sourcetype=vmstat host=$host$ | multikv fields processes | timechart avg(processes) by host
+unix,"search index=""os"" sourcetype=""ps"" host=""$host$"" | multikv fields pctCPU, COMMAND | stats sum(pctCPU) as pctCPU by _time,COMMAND | timechart avg(pctCPU) by COMMAND"
+unix,"search index=""os"" sourcetype=""ps"" host=$host$| multikv fields pctCPU, COMMAND, USER | timechart avg(pctCPU) by USER"
+unix,"search index=""os"" sourcetype=""cpu"" host=$host$ | multikv fields, pctUser, pctNice, pctSystem, pctIowait, pctIdle | eval pctNice=if(isnull(pctNice), 0, pctNice) | timechart avg(pctUser), avg(pctNice), avg(pctSystem), avg(pctIowait), avg(pctIdle)"
+unix,"search index=os sourcetype=top host=$host$ | multikv fields pctCPU COMMAND | stats max(pctCPU) as maxCPU by host, COMMAND, _time | sort -maxCPU"
+unix,search index=os source=ps | multikv | timechart avg(pctCPU) by USER useother=F limit=10
+unix,search index=os source=ps | multikv | timechart sum(CPUTIME) by USER where sum > 0
+unix,search index=os source=lsof | multikv | search FD=txt TYPE=REG AND NOT (COMMAND=lsof OR COMMAND=lsof.sh OR COMMAND=iostat OR COMMAND=iostat.sh OR COMMAND=sar OR COMMAND=awk OR COMMAND=tee) | timechart count by COMMAND useother=F limit=10
+unix,"search index=os sourcetype=vmstat host=$host$ | multikv fields memFreePct, memUsedPct, swapUsedPct | timechart median(memFreePct) as Percent_Mem_Free, median(memUsedPct) as Percent_Mem_Used, median(swapUsedPct) as Percent_Swap"
+unix,"search index=os sourcetype=ps host=$host$| multikv fields RSZ_KB, COMMAND | timechart eval(median(RSZ_KB)/1024) as ResidentMB by COMMAND"
+unix,"search index=os sourcetype=ps host=$host$| multikv fields RSZ_KB, VSZ_KB, pctMEM, COMMAND | eval RSZ_MB=RSZ_KB/1024 | eval VSZ_MB=VSZ_KB/1024  | stats max(RSZ_MB) as Resident_MB, max(VSZ_MB) as Virtual_MB, max(pctMEM) as Percent_Memory by host, COMMAND, _time | dedup COMMAND | sort -Resident_MB"
+unix,"search index=os source=ps host=$host$ | multikv fields RSZ_KB, USER | eval RSZ_MB=RSZ_KB/1024 | eval time=_time | timechart eval(sum(RSZ_MB)/dc(time)) as Avg_Mem_Usage by USER useother=F limit=10"
+unix,search index=os sourcetype=vmstat host=$host$ | multikv fields memUsedPct | timechart median(memUsedPct) by host
+unix,"search index=os sourcetype=ps host=$host$ | multikv fields pctMEM, RSZ_KB, VSZ_KB, COMMAND | eval RSZ_MB=RSZ_KB/1024 | eval VSZ_MB=VSZ_KB/1024 | stats median(RSZ_MB) by VSZ_MB, host, COMMAND, _time | dedup 1 host, COMMAND sortby -median(RSZ_MB)"
+unix,"search index=os sourcetype=hardware earliest=-1d host=$host$ | dedup host | eval RealMemoryMB = RealMemoryMB/1024 | eval SwapMemoryMB = SwapMemoryMB/1024 | fields + RealMemoryMB, SwapMemoryMB, host | chart max(RealMemoryMB) as Real_Memory_MB, max(SwapMemoryMB) as Swap_Memory_MB by host"
+unix,"search index=os source=ps host=$host$ | multikv fields RSZ_KB, USER, COMMAND | eval RSZ_MB=RSZ_KB/1024 | stats max(RSZ_MB) by USER, COMMAND| sort -max(RSZ_MB)"
+unix,"search index=""os"" sourcetype=""df"" host=$host$ | multikv fields FileSystem, UsePct | strcat host '@' Filesystem Host_FileSystem | timechart avg(UsePct) by Host_FileSystem | rename avg(UsePct) as %Used"
+unix,"search index=""os"" sourcetype=""lsof"" host=$host$ | multikv fields COMMAND, USER, TYPE, NAME filter REG | eval time=_time| timechart eval(count/dc(time)) by COMMAND"
+unix,"search index=""os"" sourcetype=""lsof"" host=$host$ | multikv fields COMMAND, USER, TYPE, NAME | eval time =_time | timechart eval(count/dc(time)) by TYPE"
+unix,search index=os sourcetype=vmstat
+unix,search index=os sourcetype=ps
+unix,search index=os sourcetype=top
+unix,search index=os sourcetype=hardware
+unix,search index=os sourcetype=iostat
+unix,search index=os sourcetype=netstat
+unix,search index=os sourcetype=protocol
+unix,search index=os sourcetype=openPorts
+unix,search index=os sourcetype=time
+unix,search index=os sourcetype=lsof
+unix,search index=os sourcetype=df
+unix,search index=os sourcetype=who
+unix,search index=os sourcetype=usersWithLoginPrivs
+unix,search index=os sourcetype=lastlog
+unix,search index=os sourcetype=interfaces
+unix,search index=os sourcetype=cpu
+unix,search index=os sourcetype=rlog
+unix,search index=os sourcetype=package
+unix,"search index=""os"" sourcetype=""who"" host=$host$ | multikv fields USERNAME, LINE, TIME | dedup USERNAME, LINE, TIME sortby +_time | sort -_time"
+unix,search index=os eventtype=failed_login host=$host$
+unix,"search index=os eventtype=useradd OR eventtype=""useradd-suse"""
+unix,search index=os eventtype=userdel
+unix,"search index=os eventtype=groupadd OR eventtype=""groupadd-suse"""
+unix,search index=os eventtype=groupdel
+unix,search index=os eventtype=linux-password-change
+unix,search index=os eventtype=linux-password-change-failed
+unix,"search index=os eventtype=""Failed_SU"""
+unix,"search index=""os"" sourcetype=""interfaces"" host=* | multikv fields name, inetAddr, RXbytes, TXbytes | streamstats current=f last(TXbytes) as lastTX, last(RXbytes) as lastRX by Name  | eval time=_time | strcat Name ""-"" inetAddr ""@"" host Interface_Host | eval RX_Thruput_KB = (lastRX-RXbytes)/1024 | eval TX_Thruput_KB = (lastTX-TXbytes)/1024 | timechart eval(sum(TX_Thruput_KB)/dc(time)) by Interface_Host"
+unix,search index=os sourcetype=openPorts | MULTIKV | STATS count BY Port | SORT count
+unix,"search index=""os"" sourcetype=""interfaces"" host=$host$ | multikv fields Name, inetAddr | strcat Name ""-"" inetAddr ""@"" host Interface_Host | top Interface_Host limit=20"
+unix,"search index=os sourcetype=openPorts host=$host$ | HEAD LIMIT=1 | MULTIKV FIELDS Proto, Port | EVAL PortOverProto = case(Port == ""8089"", ""Splunk Management Port"", Port == ""8000"", ""Splunk HTTP Port"", Port == ""21"", ""ftp"", Port == ""22"", ""ssh"", Port == ""23"", ""telnet"", Port == ""25"", ""smtp"", Port == ""69"", ""tftp"", Port == ""79"", ""finger"", Port == ""80"", ""http"", Port == ""88"", ""kerberos"", Port == ""143"", ""imap"", Port == ""161"", ""snmp"", Port == ""162"", ""snmptrap"", Port == ""179"", ""bgp"", Port == ""1521"", ""SQL*Net"", 1==1, Port."" / "".Proto) | CHART count BY PortOverProto | SORT count DESC | RENAME count AS ""# of Connections Accepted"""
+unix,"search index=os sourcetype=netstat host=$host$ | HEAD LIMIT=1 | MULTIKV FIELDS ForeignAddress | REX FIELD=ForeignAddress ""(?<hostOnly>^.*)[:\.].+$"" | FIELDS + hostOnly | WHERE hostOnly != ""*"" | RENAME hostOnly AS Address | CHART count BY Address | SORT count DESC | RENAME count AS ""# of Connections to This Address"""
+unix,"search index=os sourcetype=netstat host=$host$ | MULTIKV FIELDS State | SEARCH NOT (State=""<n/a>"") | TIMECHART count BY State"
+unix,search index=os source=ps | multikv | timechart avg(VSZ_KB) by USER useother=F limit=10
+unix,"search index=os source=vmstat | fields + total_memory,used_memory,active_memory,inactive_memory,free_memory,buffer_memory,swap_cache,total_swap,used_swap,free_swap,pages_paged_in,pages_paged_out,pages_swapped_in,pages_swapped_out"
+unix,"search index=""os"" source=""vmstat"" | multikv fields memFreePct, memUsedPct | timechart avg(memUsedPct) avg(memFreePct) | rename avg(memUsedPct) as ""Used Mem"", avg(memFreePct) as Free_Mem"
+unix,"search index=""os"" sourcetype=ps | multikv | timechart avg(RSZ_KB) by COMMAND | rename avg(RSZ_KB) as ResidentSize(kb)"
+unix,"search index=""os"" sourcetype=ps | multikv | timechart avg(VSZ_KB) by COMMAND | rename avg(VSZ_KB) as ResidentSize(kb)"
+unix,"search index=os eventtype=""fschange_add_file"""
+unix,"search index=os eventtype=""fschange_delete_file"""
+unix,"search index=os eventtype=""fschange_modify_file"""
+unix,"search index=""os"" sourcetype=""package"" | dedup host"
+unix,search index=os sourcetype=hardware | dedup host
+unix,| metadata type=sources index=os | typer | search eventtype=nix-all-logs
+unix,| metadata type=sources index=os | typer |search eventtype=nix_configs
+unix,"search index=""os"" eventtype=nix_errors | strcat source ""@"" host changelist | timechart count by changelist"
+unix,"search index=""os"" eventtype=""nix_configs"" | strcat source ""@"" host changelist | timechart count by changelist"
+unix,search sourcetype=syslog error OR failed OR severe NOT assignment starthoursago=1 | fields +_raw
+unix,search index=os source=ps | multikv | timechart avg(RSZ_KB) by COMMAND
+unix,search index=os source=top | multikv | timechart avg(pctCPU) by COMMAND
+unix,search index=os source=iostat | multikv | timechart avg(rReq_PS) avg(wReq_PS)
+unix,search index=os source=iostat | multikv | timechart avg(wReq_PS) by host
+unix,search index=os source=lsof | multikv | timechart count(USER) by USER
+unix,search index=os source=netstat | multikv | timechart count(Proto) by Proto
+unix,search index=os source=netstat | multikv | timechart count(Type) by Type
+unix,search index=os source=ps | multikv | timechart avg(pctCPU) by COMMAND
+unix,search index=os source=ps | multikv | chart avg(RSZ_KB) by USER
+unix,search index=os source=ps | multikv |  timechart avg(RSZ_KB) by COMMAND
+unix,search index=os source=top | multikv | timechart avg(pctCPU) by host
+unix,search index=os source=top | multikv | timechart avg(RSZ_KB) by COMMAND
+unix,search index=os source=vmstat | multikv | timechart avg(memFreeMB) by host
+unix,search index=os source=vmstat | multikv | timechart avg(memTotalMB) by host

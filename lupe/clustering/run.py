@@ -1,6 +1,7 @@
 from logging import getLogger, basicConfig, DEBUG
 from logging.handlers import RotatingFileHandler
 import logging
+import queryutils
 
 BYTES_IN_MB = 1048576
 FIVE_MB = 5*BYTES_IN_MB
@@ -38,18 +39,7 @@ def get_args():
     object_options = ", ".join(object_options)
 
     parser = ArgumentParser()
-    parser.add_argument("-s", "--source",
-                        help="one of: " + ", ".join(SOURCES.keys()))
-    parser.add_argument("-a", "--path",
-                        help="the path to the data to load")
-    parser.add_argument("-v", "--version", #TODO: Print possible versions
-                        help="the version of data collected")
-    parser.add_argument("-U", "--user",
-                        help="the user name for the Postgres database")
-    parser.add_argument("-P", "--password",
-                        help="the password for the Postgres database")
-    parser.add_argument("-D", "--database",
-                        help="the database for Postgres")
+
     parser.add_argument("-p", "--pipeline",
                         help="REQUIRED! Pipeline to run. \
                         Pipelines are: \
@@ -73,23 +63,7 @@ def get_args():
                             This should be compatible with the choice of features. \
                             Can be one of: " + object_options)
     parser.add_argument("-c", "--clusterer",
-                        help="Method used for clustering. Default is spectral clustering.")
-    parser.add_argument("-o", "--outputclusters",
-                        help="Name of the output plot (.png format) and \
-                            cluster assignments (.csv format). \
-                            Default name is 'output' with appropriate extensions.")
-    parser.add_argument("-t", "--outputfeatures",
-                        help="Name of the output file containing \
-                            raw features vectors (.csv format).")
-    parser.add_argument("-i", "--inputfeatures",
-                        help="Name of the input file containing \
-                            raw features vectors (.csv format).")
-    parser.add_argument("-m", "--inputmouseovers",
-                        help="Name of the input file containing \
-                            raw mouseovers vectors (.csv format).")
-    parser.add_argument("-u", "--outputmouseovers",
-                        help="Name of the output file containing \
-                            raw mouseovers vectors (.csv format).")
+                        help="Method used to cluster. Default is spectral clustering.")
     parser.add_argument("-d", "--pcadimension", type=int,
                         help="Dimension to reduce feature space down to when using PCA. \
                             Not applicable for all pipelines.")
@@ -97,7 +71,24 @@ def get_args():
                         help="Whether or not to normalize. \
                             If this flag is used, features will be normalized. \
                             Default is false.")
-    args = parser.parse_args()
+    parser.add_argument("-o", "--outputclusters",
+                        help="Name of the output plot (.png format) and \
+                            cluster assignments (.csv format). \
+                            Default name is 'output' with appropriate extensions.")
+    parser.add_argument("-t", "--outputfeatures",
+                        help="Name of the output file containing \
+                            raw features vectors (.csv format).")
+    parser.add_argument("-u", "--outputmouseovers",
+                        help="Name of the output file containing \
+                            raw mouseovers vectors (.csv format).")
+    parser.add_argument("-i", "--inputfeatures",
+                        help="Name of the input file containing \
+                            raw features vectors (.csv format).")
+    parser.add_argument("-m", "--inputmouseovers",
+                        help="Name of the input file containing \
+                            raw mouseovers vectors (.csv format).")
+    args = queryutils.arguments.get_arguments(parser)
+   
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()
@@ -139,25 +130,24 @@ def check_args(args):
     if not args.outputmouseovers:
         args.outputmouseovers = "outputmouseovers"
 
-
-def main(src, srcargs, pipeline, nclusters, featurecode,
+def run(source, pipeline, nclusters, featurecode,
         clusterees, clusterer,
         outputclusters, outputfeatures, outputmouseovers,
         inputfeatures, inputmouseovers,
         pcadims, normalize):
 
-    logger.debug("[main] - Beginning execution.")
-    logger.debug("[main] - Parameter: source = " + str(src))
-    logger.debug("[main] - Parameter: pipeline = " + str(pipeline))
-    logger.debug("[main] - Parameter: nclusters = " + str(nclusters))
-    logger.debug("[main] - Parameter: featurecode = " + str(featurecode))
-    logger.debug("[main] - Parameter: clusterees = " + str(clusterees))
-    logger.debug("[main] - Parameter: clusterer = " + str(clusterer))
-    logger.debug("[main] - Parameter: outputclusters = " + str(outputclusters))
-    logger.debug("[main] - Parameter: outputfeatures = " + str(outputfeatures))
-    logger.debug("[main] - Parameter: inputfeatures = " + str(inputfeatures))
-    logger.debug("[main] - Parameter: pcadims = " + str(pcadims))
-    logger.debug("[main] - Parameter: normalize = " + str(normalize))
+    logger.debug("[run] - Beginning execution.")
+    logger.debug("[run] - Parameter: source = " + str(source))
+    logger.debug("[run] - Parameter: pipeline = " + str(pipeline))
+    logger.debug("[run] - Parameter: nclusters = " + str(nclusters))
+    logger.debug("[run] - Parameter: featurecode = " + str(featurecode))
+    logger.debug("[run] - Parameter: clusterees = " + str(clusterees))
+    logger.debug("[run] - Parameter: clusterer = " + str(clusterer))
+    logger.debug("[run] - Parameter: outputclusters = " + str(outputclusters))
+    logger.debug("[run] - Parameter: outputfeatures = " + str(outputfeatures))
+    logger.debug("[run] - Parameter: inputfeatures = " + str(inputfeatures))
+    logger.debug("[run] - Parameter: pcadims = " + str(pcadims))
+    logger.debug("[run] - Parameter: normalize = " + str(normalize))
 
     if (pipeline in NON_PCA_PIPELINES) and pcadims is not None:
         raise RuntimeWarning(
@@ -165,10 +155,6 @@ def main(src, srcargs, pipeline, nclusters, featurecode,
     if (pipeline in PCA_PIPELINES) and pcadims is None:
         raise RuntimeWarning(
             "You need to specify the number of dimensions to reduce to using PCA (using the -d flag).")
-
-    src_class = SOURCES[src][0]
-    src_args = lookup(srcargs, SOURCES[src][1])
-    source = src_class(*src_args)
 
     if inputfeatures is None or inputmouseovers is None:
         data, mouseovers = fetch_data(source, clusterees)
@@ -195,7 +181,8 @@ def main(src, srcargs, pipeline, nclusters, featurecode,
 if __name__ == "__main__":
     args = get_args()
     check_args(args)
-    main(args.source, vars(args), int(args.pipeline), args.nclusters, args.features,
+    source = queryutils.arguments.initialize_source(args.source, args)
+    run(source, int(args.pipeline), args.nclusters, args.features,
         args.clusterees, args.clusterer,
         args.outputclusters, args.outputfeatures, args.outputmouseovers,
         args.inputfeatures, args.inputmouseovers,

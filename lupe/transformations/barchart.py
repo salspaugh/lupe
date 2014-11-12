@@ -1,11 +1,11 @@
 from collections import defaultdict
 import numpy
 import matplotlib.pyplot as plt
-from queryutils.arguments import get_arguments, lookup, SOURCES
+from queryutils.arguments import get_arguments, initialize_source
 from queryutils.parse import tokenize_query
 from queryutils.splunktypes import lookup_categories
 
-def main(source, query_type, user_weighted, output):
+def tally_and_plot(source, query_type, user_weighted, output):
     """Tallies and creates bar chart for percentage of stages and percentage of
     queries for each type of transformation.
 
@@ -24,15 +24,9 @@ def main(source, query_type, user_weighted, output):
     :type output: str
     """
     stage_pcts, nstages, query_pcts, nqueries = tally(source, query_type, user_weighted)
-    label = "weighted" if user_weighted else "unweighted"
-    output = "%s-%s" % (output, label)
-    stages_textbox = "%.1f stages per user" if user_weighted else "%d stages"
-    queries_textbox = "%.1f queries per user" if user_weighted else "%d queries"
-    stages_textbox = stages_textbox % nstages
-    queries_textbox = queries_textbox % nqueries
-    plot_barchart(stage_pcts, stages_textbox, query_pcts, queries_textbox, output)
+    plot_barchart(stage_pcts, nstages, query_pcts, nqueries, user_weighted, output)
 
-def tally(source, query_type, user_weighted):
+def tally(source, query_type, user_weighted=False):
     """Calls either tally_weighted() or tally_unweighted() to tally percentage of stages
     and percentage of queries for each type of transformation.
 
@@ -127,7 +121,7 @@ def tally_unweighted(source, query_type):
     query_cnt = defaultdict(int)
     nqueries = 0
 
-    for query in source.fetch_queries(query_type):
+    for query in source.get_queries(query_type):
 
         transforms = lookup_categories(query)
 
@@ -144,55 +138,66 @@ def tally_unweighted(source, query_type):
 
     return stage_pct, nstages, query_pct, nqueries
 
-def plot_barchart(stage_percents, stages_label, query_percents, queries_label, output):
+def plot_barchart(stage_pcts, nstages, query_pcts, nqueries, user_weighted, output):
     """Plots bar chart of percentage of stages and percentage of queries for each type of transformation.
 
-    :param stage_percents: percentage of stages per transformation
-    :type stage_percents: dict
-    :param stages_label: string labeling textbox of total number of stages
-    :type stages_label: str
-    :param query_percents: percentage of queries per transformation
-    :type query_percents: dict
-    :param queries_label: string labeling textbox of total number of queries
-    :type queries_label: str
+    :param stage_pcts: percentage of stages per transformation
+    :type stage_pcts: dict
+    :param nstages: number of total stages
+    :type nstages: int
+    :param query_pcts: percentage of queries per transformation
+    :type query_pcts: dict
+    :param nqueries: number of total queries
+    :type nqueries: int
+    :param user_weighted: whether the percents are weighted by user
+    :type user_weighted: bool
     :param output: the name of the output file containing the barchart
     :type output: str
     """
+    stages_textbox, queries_textbox = form_labels(nstages, nqueries, user_weighted)
 
-    spcts = sorted(stage_percents.iteritems(), key=lambda x: x[1], reverse=True)
+    spcts = sorted(stage_pcts.iteritems(), key=lambda x: x[1], reverse=True)
     names = [k for (k,v) in spcts]
-    qpcts = [query_percents[k]*100 for (k,v) in spcts]
+    qpcts = [query_pcts[k]*100 for (k,v) in spcts]
     spcts = [v*100 for (k,v) in spcts]
     for (n, s, q) in zip(names, spcts, qpcts):
         print "%s, %.1f, %.1f" % (n, s, q)
 
-    index = numpy.arange(len(stage_percents))
+    index = numpy.arange(len(stage_pcts))
 
     plt.subplot(2, 1, 1)
     rects = plt.bar(index, spcts, 1, color="r")
-    autolabel(rects, spcts)
+    #autolabel(rects, spcts)
     plt.ylabel("% stages", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
+    plt.ylim(ymax=100)
     plt.xticks(index + 0.5, ["" for n in names])
-    plt.text(10.5, 72, "N = %s" % stages_label,
+    plt.text(5, 70, "N = %s" % stages_textbox,
         fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
     plt.tick_params(bottom="off")
 
     plt.subplot(2, 1, 2)
     rects = plt.bar(index, qpcts, 1, color="c")
-    autolabel(rects, qpcts)
+    #autolabel(rects, qpcts)
     plt.ylabel("% queries", fontsize=18)
     plt.yticks(range(0, 100, 10), fontsize=12)
+    plt.ylim(ymax=100)
     plt.xticks(index + 0.5, names, rotation=-45, fontsize=16,
        rotation_mode="anchor", ha="left")
-    #plt.xlabel("Transformation Type", fontsize=20)
-    plt.text(10, 80, "N = %s" % queries_label,
+    plt.text(5, 70, "N = %s" % queries_textbox,
              fontsize=16, bbox=dict(facecolor="none", edgecolor="black", pad=10.0))
     plt.tick_params(bottom="off")
 
-    plt.autoscale(enable=True, axis="x", tight=None)
-    plt.tight_layout()
-    plt.savefig(output + ".pdf", dpi=400)
+    #plt.autoscale(enable=True, axis="x", tight=None)
+    #plt.tight_layout()
+    plt.savefig(output)
+
+def form_labels(nstages, nqueries, user_weighted):
+    stages_textbox = "%.1f stages per user" if user_weighted else "%d stages"
+    queries_textbox = "%.1f queries per user" if user_weighted else "%d queries"
+    stages_textbox = stages_textbox % nstages
+    queries_textbox = queries_textbox % nqueries
+    return stages_textbox, queries_textbox
 
 def autolabel(rects, counts):
     for ii, rect in enumerate(rects):
@@ -202,14 +207,13 @@ def autolabel(rects, counts):
             1000, "%.2f" % (counts[ii]),
             ha="center", va="bottom", fontsize=20)
 
-def lookup(dictionary, lookup_keys):
-    return [dictionary[k] for k in lookup_keys]
-
 if __name__ == "__main__":
+
     from argparse import ArgumentParser
     parser = ArgumentParser(
         description="Bar graph describing how frequently each transformation appears in user queries.")
     args = get_arguments(parser, o=True, w=True)
+
     if all([arg is None for arg in vars(args).values()]):
         parser.print_help()
         exit()
@@ -220,7 +224,6 @@ if __name__ == "__main__":
         args.output = "categories_histogram"
     if args.querytype is None:
         raise RuntimeError("You must specify a query type.")
-    src_class = SOURCES[args.source][0]
-    src_args = lookup(vars(args), SOURCES[args.source][1])
-    source = src_class(*src_args)
-    main(source, args.querytype, args.weighted, args.output)
+
+    source = initialize_source(args.source, args)
+    tally_and_plot(source, args.querytype, args.weighted, args.output)

@@ -50,3 +50,9 @@ nosetests.xml
 
 # Translations
 *.mo
+
+# IPython 
+
+
+# IPython 
+.ipynb_checkpoints

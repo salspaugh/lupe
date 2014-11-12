@@ -1,0 +1,9 @@
+user,search
+ciscofirewall,"search eventtype=""cisco_firewall"" |  bin _time span=5m | stats count by eventtype, src_ip, dest_ip, host,log_level_desc,event_desc, _time"
+ciscofirewall,"search eventtype=cisco_firewall | bin _time span=15m | sistats count by eventtype, src_ip, dest_ip, host,log_level_desc,event_desc, _time"
+ciscofirewall,search eventtype=cisco_firewall | timechart count by eventtype
+ciscofirewall,search eventtype=cisco_firewall eventtype=firewall-deny | timechart count by host
+ciscofirewall,search eventtype=cisco_firewall eventtype=firewall-accept | timechart count by host
+ciscofirewall,search eventtype=cisco_firewall | top src_ip showperc=f
+ciscofirewall,search eventtype=cisco_firewall  | top dest_ip showperc=f
+ciscofirewall,search eventtype=cisco_firewall
