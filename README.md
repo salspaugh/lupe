@@ -1,14 +1,28 @@
-#### How to run this code
+### Overview
 
-*Coming soon ...*
+This project contains code to analyze Splunk query logs. It is the code used to generate results for our 2014 LISA paper:
 
-#### Contributors
+ _Analyzing Log Analysis: An Empirical Study of User Log Mining. S. Alspaugh, B. Chen, J. Lin, A. Ganapathi, M. Hearst, and R. Katz. Large Installation System Administration Conference (LISA). November 2014._
 
-The stats for this repository don't accurately reflect the work that was put
-into writing this code and performing the analysis, as the pre-released 
-versions of this code were developed in other repositories. The contributors
-of this were:
+### Getting started
 
-* Sara Alspaugh
-* Jessica Lin
-* Beidi Chen
+1. See the [wiki page](https://github.com/salspaugh/lupe/wiki/Data-analysis-interaction-record-analysis-methodology) that describes the methodology this code implements.
+2. Also checkout the [example IPython notebook](https://github.com/salspaugh/lupe/blob/master/example/example.ipynb) that shows how to use this code. 
+
+
+### Dependencies
+
+See requirements.txt
+
+
+### Installation
+
+Currently, the best way to start using this code is to pull a version from
+github:
+
+`git clone https://github.com/salspaugh/lupe.git`
+
+Then add a pointer to it to your $PYTHONPATH:
+
+`export PYTHONPATH=$PYTHONPATH:/path/to/lupe`
+
