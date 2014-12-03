@@ -24,25 +24,46 @@ EDGE_ATTRS = {
 
 def make_diagram(graph, threshold, output):
     plot = pgv.AGraph(**GRAPH_ATTRS)
-    nodes = set()
-    incoming = set()
+    
+    seen = set()
+    has_incoming = set()
+    has_outgoing = set()
+
+    # Add nodes.
     for src in graph.iterkeys():
-        nodes.add(src)
+        seen.add(src)
         add_node(plot, src)
+
+    # Add edges.
     for (src, dsts) in graph.iteritems():
         for (dst, weight) in dsts.iteritems():
             if weight < threshold: continue
-            if not dst in nodes:
-                add_node(plot, dst)
-                incoming.add(dst)
+            if not dst in seen:
+                seen.add(dst)
+                add_node(plot, src, start=start, end=end)
+            if not src == dst:
+                has_incoming.add(dst)
+                has_outgoing.add(src)
             add_edge(plot, src, dst, weight)
-    for (src, dsts) in graph.iteritems():
-        for (dst, weight) in dsts.iteritems():
-            if dst not in incoming:
-                srcs = { source: weight for source in graph if dst in graph[source] }
+
+    # Make sure all edges have an incoming and outgoing edge.
+    for node in seen:
+        if node not in has_incoming:
+            srcs = {}
+            for (src, dsts) in graph.iteritems():
+                for (dst, weight) in dsts.iteritems():
+                    if dst == node and not src == dst:
+                        srcs[src] = weight
+            if len(srcs) > 0:
                 s = sorted(srcs.items(), key=lambda x: x[1], reverse=True)[0][0]
-                add_edge(plot, s, dst, NEGLIGIBLE)
-                incoming.add(dst)
+                add_edge(plot, s, node, NEGLIGIBLE)
+        if node not in has_outgoing:
+            dsts = graph[node]
+            dsts = sorted(dsts.items(), key=lambda x: x[1], reverse=True)
+            dsts = filter(lambda x: x[0] != node, dsts)
+            d = dsts[0][0]
+            add_edge(plot, node, d, NEGLIGIBLE)
+
     plot.draw(output, prog="dot") 
 
 def add_node(graph, node):
