@@ -40,7 +40,7 @@ def make_diagram(graph, threshold, output):
             if weight < threshold: continue
             if not dst in seen:
                 seen.add(dst)
-                add_node(plot, src, start=start, end=end)
+                add_node(plot, dst, start=start, end=end)
             if not src == dst:
                 has_incoming.add(dst)
                 has_outgoing.add(src)
@@ -48,7 +48,7 @@ def make_diagram(graph, threshold, output):
 
     # Make sure all edges have an incoming and outgoing edge.
     for node in seen:
-        if node not in has_incoming:
+        if node not in has_incoming and node != start:
             srcs = {}
             for (src, dsts) in graph.iteritems():
                 for (dst, weight) in dsts.iteritems():
@@ -57,7 +57,7 @@ def make_diagram(graph, threshold, output):
             if len(srcs) > 0:
                 s = sorted(srcs.items(), key=lambda x: x[1], reverse=True)[0][0]
                 add_edge(plot, s, node, NEGLIGIBLE)
-        if node not in has_outgoing:
+        if node not in has_outgoing and node != end:
             dsts = graph[node]
             dsts = sorted(dsts.items(), key=lambda x: x[1], reverse=True)
             dsts = filter(lambda x: x[0] != node, dsts)
